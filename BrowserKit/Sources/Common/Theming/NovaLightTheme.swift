@@ -43,9 +43,9 @@ private struct NovaLightColourPalette: ThemeColourPalette {
 
     // MARK: - Action
 
-    var actionPrimary: UIColor = NovaColors.Violet50
-    var actionPrimaryHover: UIColor = NovaColors.Violet60
-    var actionPrimaryDisabled: UIColor = NovaColors.Violet50.withAlphaComponent(0.4)
+    var actionPrimary: UIColor = NovaColors.MirlumiBlue
+    var actionPrimaryHover: UIColor = NovaColors.MirlumiDeepBlue
+    var actionPrimaryDisabled: UIColor = NovaColors.MirlumiBlue.withAlphaComponent(0.4)
     var actionSecondary: UIColor = NovaColors.Gray15
     var actionSecondaryHover: UIColor = NovaColors.Gray20
     var actionSecondaryDisabled: UIColor = NovaColors.Gray15.withAlphaComponent(0.4)
@@ -64,7 +64,7 @@ private struct NovaLightColourPalette: ThemeColourPalette {
     var textPrimary: UIColor = NovaColors.VioletDesaturated90
     var textSecondary: UIColor = NovaColors.VioletDesaturated90.withAlphaComponent(0.7)
     var textDisabled: UIColor = NovaColors.VioletDesaturated90.withAlphaComponent(0.4)
-    var textAccent: UIColor = NovaColors.Violet50
+    var textAccent: UIColor = NovaColors.MirlumiDeepBlue
     var textCritical: UIColor = NovaColors.Red50
     var textInverted: UIColor = NovaColors.VioletDesaturated0
     var textInvertedDisabled: UIColor = NovaColors.VioletDesaturated0
@@ -78,7 +78,7 @@ private struct NovaLightColourPalette: ThemeColourPalette {
     var iconPrimary: UIColor = NovaColors.VioletDesaturated90
     var iconSecondary: UIColor = NovaColors.VioletDesaturated90.withAlphaComponent(0.7)
     var iconDisabled: UIColor = NovaColors.VioletDesaturated90.withAlphaComponent(0.4)
-    var iconAccent: UIColor = NovaColors.Violet50
+    var iconAccent: UIColor = NovaColors.MirlumiBlue
     var iconCritical: UIColor = NovaColors.Red50
     var iconInverted: UIColor = NovaColors.VioletDesaturated0
     var iconOnColor: UIColor = NovaColors.VioletDesaturated0

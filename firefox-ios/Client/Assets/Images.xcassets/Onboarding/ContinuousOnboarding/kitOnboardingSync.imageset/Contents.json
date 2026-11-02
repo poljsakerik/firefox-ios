@@ -1,22 +1,12 @@
 {
-  "images" : [
+  "images": [
     {
-      "filename" : "kitOnboardingSync.pdf",
-      "idiom" : "universal"
-    },
-    {
-      "appearances" : [
-        {
-          "appearance" : "luminosity",
-          "value" : "dark"
-        }
-      ],
-      "filename" : "kitOnboardingSyncDark.pdf",
-      "idiom" : "universal"
+      "filename": "mirlumi.png",
+      "idiom": "universal"
     }
   ],
-  "info" : {
-    "author" : "xcode",
-    "version" : 1
+  "info": {
+    "author": "xcode",
+    "version": 1
   }
 }

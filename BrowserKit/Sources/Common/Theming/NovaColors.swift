@@ -33,6 +33,12 @@ final class NovaColors {
     static let Gray85 = UIColor(rgb: 0x131215)
     static let Gray90 = UIColor(rgb: 0x121114)
 
+    // MARK: - Mirlumi
+    static let MirlumiBlue = UIColor(rgb: 0x2f7fe8)
+    static let MirlumiDeepBlue = UIColor(rgb: 0x2465c1)
+    static let MirlumiSky = UIColor(rgb: 0x6db4f8)
+    static let MirlumiPaleSky = UIColor(rgb: 0x9dd0fa)
+
     // MARK: - Violet Desaturated
     static let VioletDesaturated0 = UIColor(rgb: 0xf2f0f8)
     static let VioletDesaturated10 = UIColor(rgb: 0xe2dcf2)
