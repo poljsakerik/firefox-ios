@@ -401,7 +401,7 @@ class AppSettingsTableViewController: SettingsTableViewController,
             )
         }
 
-        if MirlumiBuild.usesRemoteConfiguration, summarizerNimbusUtils.isSummarizeFeatureEnabled {
+        if summarizerNimbusUtils.isSummarizeFeatureEnabled {
             generalSettings.append(SummarizeSetting(settings: self, settingsDelegate: parentCoordinator))
         }
 

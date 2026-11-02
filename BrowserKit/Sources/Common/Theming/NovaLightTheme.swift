@@ -114,7 +114,7 @@ private struct NovaLightColourPalette: ThemeColourPalette {
         NovaColors.Pink40,
         NovaColors.Orange30
     ])
-    var gradientBorder = Gradient(colors: [NovaColors.Violet30, NovaColors.Violet50])
+    var gradientBorder = Gradient(colors: [NovaColors.MirlumiBlue, NovaColors.MirlumiDeepBlue])
     var gradientPrivacy = Gradient(colors: [
         NovaColors.Purple40,
         NovaColors.VioletDesaturated90
@@ -155,7 +155,7 @@ private struct NovaLightColourPalette: ThemeColourPalette {
     var gradientOnboardingStop4: UIColor { fallbackPalette.gradientOnboardingStop4 }
     var iconRatingNeutral: UIColor { fallbackPalette.iconRatingNeutral }
     var borderSecondary: UIColor { fallbackPalette.borderSecondary }
-    var borderAccent: UIColor { fallbackPalette.borderAccent }
+    var borderAccent: UIColor = NovaColors.MirlumiBlue
     var borderAccentNonOpaque: UIColor { fallbackPalette.borderAccentNonOpaque }
     var borderAccentPrivate: UIColor { fallbackPalette.borderAccentPrivate }
     var borderToolbarDivider: UIColor { fallbackPalette.borderToolbarDivider }

@@ -45,7 +45,7 @@ struct DefaultSummarizerNimbusUtils: FeatureFlaggable, SummarizerNimbusUtils {
     }
 
     var isSummarizeFeatureEnabled: Bool {
-        return isAppleSummarizerEnabled() || isHostedSummarizerEnabled()
+        return MirlumiBuild.usesRemoteConfiguration && (isAppleSummarizerEnabled() || isHostedSummarizerEnabled())
     }
 
     var isToolbarButtonEnabled: Bool {
