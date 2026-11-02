@@ -2,6 +2,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/
 
+import Common
 import Foundation
 import MobileCoreServices
 import WebKit
@@ -137,10 +138,14 @@ class ShareManager: NSObject, FeatureFlaggable {
             // Files which are shared from the Downloads Panel will NOT have any associated remote URL (we don't store that
             // history).
             if let remoteURL {
-                appActivities.append(SendToDeviceActivity(activityType: .sendToDevice, url: remoteURL))
+                if MirlumiBuild.usesFirefoxAccounts {
+                    appActivities.append(SendToDeviceActivity(activityType: .sendToDevice, url: remoteURL))
+                }
             }
         default:
-            appActivities.append(SendToDeviceActivity(activityType: .sendToDevice, url: shareType.wrappedURL))
+            if MirlumiBuild.usesFirefoxAccounts {
+                appActivities.append(SendToDeviceActivity(activityType: .sendToDevice, url: shareType.wrappedURL))
+            }
         }
 
         return appActivities

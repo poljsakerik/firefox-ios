@@ -316,7 +316,8 @@ class AppDelegate: UIResponder,
     }
 
     private func verifyAutopushSubscriptions() {
-        guard Autopush.shouldVerifySubscriptions(prefs: profile.prefs) else { return }
+        guard MirlumiBuild.usesPushNotifications,
+              Autopush.shouldVerifySubscriptions(prefs: profile.prefs) else { return }
 
         Task { [profile] in
             do {

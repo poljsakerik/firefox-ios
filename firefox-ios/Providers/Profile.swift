@@ -661,7 +661,9 @@ open class BrowserProfile: Profile,
     lazy var remoteSettingsService: RemoteSettingsService = {
         let remoteSettingsEnvironmentKey = prefs.stringForKey(PrefsKeys.RemoteSettings.remoteSettingsEnvironment) ?? ""
         let remoteSettingsEnvironment = RemoteSettingsEnvironment(rawValue: remoteSettingsEnvironmentKey) ?? .prod
-        let remoteSettingsServer = remoteSettingsEnvironment.toRemoteSettingsServer()
+        let remoteSettingsServer = MirlumiBuild.usesRemoteConfiguration
+            ? remoteSettingsEnvironment.toRemoteSettingsServer()
+            : .custom(url: "https://remote-settings.invalid")
         let bucketName = (remoteSettingsServer == .prod ? "main" : "main-preview")
         let config = RemoteSettingsConfig(
             server: remoteSettingsServer,
@@ -678,8 +680,10 @@ open class BrowserProfile: Profile,
         }
         let service = remoteSettingsServiceFactory(path, config)
         #if !MOZ_TARGET_NOTIFICATIONSERVICE && !MOZ_TARGET_SHARETO && !MOZ_TARGET_CREDENTIAL_PROVIDER
-        service.setTelemetry(telemetry: RemoteSettingsGleanTelemetry())
-        serviceSyncCoordinator = RemoteSettingsServiceSyncCoordinator(service: service, prefs: prefs)
+        if MirlumiBuild.usesRemoteConfiguration {
+            service.setTelemetry(telemetry: RemoteSettingsGleanTelemetry())
+            serviceSyncCoordinator = RemoteSettingsServiceSyncCoordinator(service: service, prefs: prefs)
+        }
         #endif
         return service
     }()

@@ -11,6 +11,19 @@ protocol NimbusFeatureFlagLayerProviding: Sendable {
 }
 
 final class NimbusFeatureFlagLayer: NimbusFeatureFlagLayerProviding, Sendable {
+    /// Features that reach a Mozilla service or partner, or promote one. They stay off in every Mirlumi build.
+    static let disabledInMirlumi: Set<FeatureFlagID> = [
+        .adBlocker, .adBlockerBadge, .adsClient, .aiKillSwitch, .firefoxJpGuideDefaultSite, .firefoxSuggestFeature,
+        .googleLens, .googleLensSearchInterstitial, .hntSponsoredShortcuts, .homepageStoryCategories,
+        .homepageTrackerBlockerModule,
+        .hostedSummarizer, .hostedSummarizerShakeGesture, .hostedSummarizerToolbarEntrypoint,
+        .improvedAppStoreReviewTriggerFeature, .microsurvey, .multiDayOnboarding, .quickAnswers,
+        .quickAnswersOptInRedesign, .relayIntegration, .reportBrokenSite, .searchConfigV3, .sentFromFirefox,
+        .sentFromFirefoxTreatmentA, .shouldUseJapanConfiguration, .summarizerAppAttestAuth,
+        .summarizerLanguageExpansion, .summarizerPermissiveGuardrails, .touFeature, .translation,
+        .translationLanguagePicker, .trendingSearches, .videoIntroOnboarding, .vpnFeature, .waybackMachine
+    ]
+
     private let nimbus: FxNimbus
 
     init(nimbus: FxNimbus = FxNimbus.shared) {
@@ -20,6 +33,8 @@ final class NimbusFeatureFlagLayer: NimbusFeatureFlagLayerProviding, Sendable {
     // MARK: - Public methods
     // swiftlint:disable:next function_body_length
     public func checkNimbusConfigFor(_ featureID: FeatureFlagID, with prefs: Prefs) -> Bool {
+        if Self.disabledInMirlumi.contains(featureID) { return false }
+
         // Always override Nimbus defaults if we're toggling things in the debug menu
         #if MOZ_CHANNEL_beta || MOZ_CHANNEL_developer
         if let debugKey = featureID.debugKey,

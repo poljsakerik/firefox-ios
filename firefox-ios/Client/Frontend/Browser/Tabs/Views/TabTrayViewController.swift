@@ -125,9 +125,9 @@ final class TabTrayViewController: UIViewController,
 
     private lazy var experimentSegmentControl: TabTraySelectorView = {
         let selectedIndex = experimentConvertSelectedIndex()
-        let titles = [TabTrayPanelType.privateTabs.label,
-                      TabTrayPanelType.tabs.label,
-                      TabTrayPanelType.syncedTabs.label]
+        let titles = MirlumiBuild.usesFirefoxAccounts
+            ? [TabTrayPanelType.privateTabs.label, TabTrayPanelType.tabs.label, TabTrayPanelType.syncedTabs.label]
+            : [TabTrayPanelType.privateTabs.label, TabTrayPanelType.tabs.label]
         let selector = TabTraySelectorView(selectedIndex: selectedIndex,
                                            theme: retrieveTheme(),
                                            buttonTitles: titles)
@@ -140,9 +140,9 @@ final class TabTrayViewController: UIViewController,
 
     private lazy var experimentiPadSegmentControl: TabTrayiPadSelectorView = {
         let selectedIndex = experimentConvertSelectedIndex()
-        let titles = [TabTrayPanelType.privateTabs.label,
-                      TabTrayPanelType.tabs.label,
-                      TabTrayPanelType.syncedTabs.label]
+        let titles = MirlumiBuild.usesFirefoxAccounts
+            ? [TabTrayPanelType.privateTabs.label, TabTrayPanelType.tabs.label, TabTrayPanelType.syncedTabs.label]
+            : [TabTrayPanelType.privateTabs.label, TabTrayPanelType.tabs.label]
         let selector = TabTrayiPadSelectorView(selectedIndex: selectedIndex,
                                                theme: retrieveTheme(),
                                                buttonTitles: titles)
@@ -174,17 +174,20 @@ final class TabTrayViewController: UIViewController,
     }()
 
     var segmentControlItems: [Any] {
-        let iPhoneItems = [
+        var iPhoneItems = [
             TabTrayPanelType.tabs.image!.overlayWith(image: countLabel),
-            TabTrayPanelType.privateTabs.image!,
-            TabTrayPanelType.syncedTabs.image!
+            TabTrayPanelType.privateTabs.image!
         ]
 
-        let regularLayoutItems = [
+        var regularLayoutItems = [
             TabTrayPanelType.tabs.label,
-            TabTrayPanelType.privateTabs.label,
-            TabTrayPanelType.syncedTabs.label,
+            TabTrayPanelType.privateTabs.label
         ]
+
+        if MirlumiBuild.usesFirefoxAccounts {
+            iPhoneItems.append(TabTrayPanelType.syncedTabs.image!)
+            regularLayoutItems.append(TabTrayPanelType.syncedTabs.label)
+        }
 
         return isRegularLayout ? regularLayoutItems : iPhoneItems
     }

@@ -177,14 +177,16 @@ class ShareViewController: UIViewController {
                 action: #selector(actionAddToReadingList),
                 hasNavigation: false
             )
-            makeSeparator(addTo: stackView)
-            makeActionRow(
-                addTo: stackView,
-                label: .ShareSendToDevice,
-                imageName: StandardImageIdentifiers.Large.deviceDesktopSend,
-                action: #selector(actionSendToDevice),
-                hasNavigation: true
-            )
+            if MirlumiBuild.usesFirefoxAccounts {
+                makeSeparator(addTo: stackView)
+                makeActionRow(
+                    addTo: stackView,
+                    label: .ShareSendToDevice,
+                    imageName: StandardImageIdentifiers.Large.deviceDesktopSend,
+                    action: #selector(actionSendToDevice),
+                    hasNavigation: true
+                )
+            }
         } else {
             pageInfoRowUrlLabel?.removeFromSuperview()
             makeActionRow(

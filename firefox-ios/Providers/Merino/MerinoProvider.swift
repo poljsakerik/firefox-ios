@@ -47,6 +47,8 @@ final class MerinoProvider: MerinoStoriesProviding, FeatureFlaggable, @unchecked
     }
 
     func fetchContent() async throws -> CuratedRecommendationsResponse {
+        guard MirlumiBuild.showsSponsoredContent else { throw Error.failure }
+
         if !AppConstants.isRunningTest && shouldUseMockData {
             return MerinoTestData().getMockDataFeed(
                 Constants.numberOfStoriesToFetchForCaching,

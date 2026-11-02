@@ -82,14 +82,14 @@ struct MainMenuConfigurationUtility: Equatable, FeatureFlaggable {
 
         if tabInfo.isHomepage {
             menuSections.append(getHorizontalTabsSection(with: uuid, tabInfo: tabInfo))
-            menuSections.append(getAccountSection(with: uuid, tabInfo: tabInfo, profileImage: profileImage))
         } else {
             menuSections.append(
                 getSiteSection(with: uuid, tabInfo: tabInfo, isExpanded: isExpanded, localeProvider: localeProvider)
             )
             menuSections.append(getHorizontalTabsSection(with: uuid, tabInfo: tabInfo))
-            menuSections.append(getAccountSection(with: uuid, tabInfo: tabInfo, profileImage: profileImage))
         }
+
+        menuSections.append(getAccountSection(with: uuid, tabInfo: tabInfo, profileImage: profileImage))
 
         return menuSections
     }
@@ -183,7 +183,7 @@ struct MainMenuConfigurationUtility: Equatable, FeatureFlaggable {
 
     // Account Section
     private func getAccountSection(with uuid: WindowUUID, tabInfo: MainMenuTabInfo, profileImage: UIImage?) -> MenuSection {
-        return MenuSection(
+        let section = MenuSection(
             isHomepage: tabInfo.isHomepage,
             options: [
                 MenuElement(
@@ -229,6 +229,13 @@ struct MainMenuConfigurationUtility: Equatable, FeatureFlaggable {
                     }
                 ),
         ])
+
+        guard !MirlumiBuild.usesFirefoxAccounts else { return section }
+
+        return MenuSection(
+            isHomepage: tabInfo.isHomepage,
+            options: Array(section.options.dropFirst())
+        )
     }
 
     // Site Section

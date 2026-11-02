@@ -48,7 +48,7 @@ final class RatingPromptManager {
     /// Show the in-app rating prompt if needed
     @MainActor
     func showRatingPromptIfNeeded() {
-        if shouldShowPrompt {
+        if MirlumiBuild.showsMarketingMessages, shouldShowPrompt {
             requestRatingPrompt()
             userDefaults.set(false, forKey: PrefsKeys.ForceShowAppReviewPromptOverride)
         }

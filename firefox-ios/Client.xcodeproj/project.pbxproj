@@ -280,6 +280,7 @@
 		2109726E2DCA8831001162A2 /* ZoomTelemetryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2109726D2DCA8831001162A2 /* ZoomTelemetryTests.swift */; };
 		210972702DCBA50F001162A2 /* GenericItemCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2109726F2DCBA4CF001162A2 /* GenericItemCellView.swift */; };
 		210E0EB8298D9D4500BB4F33 /* SearchEngineProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96A5F72F298D8BEE00234E5F /* SearchEngineProvider.swift */; };
+		0ECCCCE213E71B52405B91D5 /* MirlumiSearchEngines.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD32EE67796295146F4D27DC /* MirlumiSearchEngines.swift */; };
 		210E0EBA298D9D6400BB4F33 /* OpenSearchEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A1E3BE528CBBF44003388C4 /* OpenSearchEngine.swift */; };
 		211046C92A7ADE9000A7309F /* BlockPopupSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 211046C82A7ADE9000A7309F /* BlockPopupSetting.swift */; };
 		211046CD2A7D842A00A7309F /* TPAccessoryInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 211046CC2A7D842A00A7309F /* TPAccessoryInfo.swift */; };
@@ -1292,6 +1293,7 @@
 		8ADC2A1D2A33999800543DAA /* VersionSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8ADC2A1C2A33999800543DAA /* VersionSetting.swift */; };
 		8ADC2A1F2A3399BD00543DAA /* LicenseAndAcknowledgementsSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8ADC2A1E2A3399BD00543DAA /* LicenseAndAcknowledgementsSetting.swift */; };
 		8ADC2A212A3399DC00543DAA /* YourRightsSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8ADC2A202A3399DC00543DAA /* YourRightsSetting.swift */; };
+		3FC6CE6B8B8D53C2E4FBB6BD /* MirlumiSourceSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4222EC27821B3780142DE40 /* MirlumiSourceSetting.swift */; };
 		8ADEC6832A40F208002D2ED8 /* AppSettingsTableViewControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8ADEC6822A40F208002D2ED8 /* AppSettingsTableViewControllerTests.swift */; };
 		8ADED55C2D6679D500345293 /* BrowsingSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8ADED55B2D6679B200345293 /* BrowsingSettingsViewController.swift */; };
 		8ADED55E2D667A7700345293 /* BrowsingSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8ADED55D2D667A7700345293 /* BrowsingSetting.swift */; };
@@ -10479,6 +10481,7 @@
 		8ADC2A1C2A33999800543DAA /* VersionSetting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VersionSetting.swift; sourceTree = "<group>"; };
 		8ADC2A1E2A3399BD00543DAA /* LicenseAndAcknowledgementsSetting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LicenseAndAcknowledgementsSetting.swift; sourceTree = "<group>"; };
 		8ADC2A202A3399DC00543DAA /* YourRightsSetting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YourRightsSetting.swift; sourceTree = "<group>"; };
+		A4222EC27821B3780142DE40 /* MirlumiSourceSetting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MirlumiSourceSetting.swift; sourceTree = "<group>"; };
 		8ADEC6822A40F208002D2ED8 /* AppSettingsTableViewControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettingsTableViewControllerTests.swift; sourceTree = "<group>"; };
 		8ADED55B2D6679B200345293 /* BrowsingSettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowsingSettingsViewController.swift; sourceTree = "<group>"; };
 		8ADED55D2D667A7700345293 /* BrowsingSetting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowsingSetting.swift; sourceTree = "<group>"; };
@@ -10740,6 +10743,7 @@
 		968BD7EA27DFF0F8003148B3 /* ASGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ASGroup.swift; sourceTree = "<group>"; };
 		96A542EFBF40CDFE9AA24E2D /* zh-CN */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-CN"; path = "zh-CN.lproj/PrivateBrowsing.strings"; sourceTree = "<group>"; };
 		96A5F72F298D8BEE00234E5F /* SearchEngineProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchEngineProvider.swift; sourceTree = "<group>"; };
+		CD32EE67796295146F4D27DC /* MirlumiSearchEngines.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MirlumiSearchEngines.swift; sourceTree = "<group>"; };
 		96A5F734298D8EB900234E5F /* MockSearchEngineProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockSearchEngineProvider.swift; sourceTree = "<group>"; };
 		96A5F73729928B3700234E5F /* GeneralizedImageFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneralizedImageFetcher.swift; sourceTree = "<group>"; };
 		96AF8C1B29FC14F700EC2219 /* CreditCardInputFieldHelperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreditCardInputFieldHelperTests.swift; sourceTree = "<group>"; };
@@ -14732,6 +14736,7 @@
 				A6C978C8CE248C55BE10B98D /* SearchAccessPoint.swift */,
 				EDD2A7F92CDBD1D000ED464C /* SearchEngineElement+initFromSearchEngine.swift */,
 				96A5F72F298D8BEE00234E5F /* SearchEngineProvider.swift */,
+				CD32EE67796295146F4D27DC /* MirlumiSearchEngines.swift */,
 				ED371A672CB881EF0099F3C8 /* SearchEngineSelectionCoordinator.swift */,
 			);
 			path = SearchEngines;
@@ -15556,6 +15561,7 @@
 				8ADC2A1E2A3399BD00543DAA /* LicenseAndAcknowledgementsSetting.swift */,
 				8ADC2A1C2A33999800543DAA /* VersionSetting.swift */,
 				8ADC2A202A3399DC00543DAA /* YourRightsSetting.swift */,
+				A4222EC27821B3780142DE40 /* MirlumiSourceSetting.swift */,
 				5AE371862A4E11750092A760 /* AboutSettingsDelegate.swift */,
 			);
 			path = About;
@@ -20408,6 +20414,7 @@
 				8A0727462B4890B50071BB9F /* WebviewTelemetry.swift in Sources */,
 				8C2FB1E42FF3D66500C9A803 /* WebCompatReporterAction.swift in Sources */,
 				8ADC2A212A3399DC00543DAA /* YourRightsSetting.swift in Sources */,
+				3FC6CE6B8B8D53C2E4FBB6BD /* MirlumiSourceSetting.swift in Sources */,
 				214099652DD295F5004881E1 /* ZoomLevelPickerView.swift in Sources */,
 				8C3B1A1B2F73C8D100E2C370 /* TranslationToggleCell.swift in Sources */,
 				8AC6F2242D6E243F00D10A9F /* ExperimentEmptyPrivateTabsView.swift in Sources */,
@@ -20966,6 +20973,7 @@
 				C2D71B952A384F11003DEC7A /* ThemedTableViewCell.swift in Sources */,
 				8A5D1CBF2A30DC75005AD35C /* SyncNowSetting.swift in Sources */,
 				210E0EB8298D9D4500BB4F33 /* SearchEngineProvider.swift in Sources */,
+				0ECCCCE213E71B52405B91D5 /* MirlumiSearchEngines.swift in Sources */,
 				AB4FB4DB2C89FB10005EF0CC /* BlockedTrackersHeaderView.swift in Sources */,
 				D34DC8531A16C40C00D49B7B /* Profile.swift in Sources */,
 				8A15AB752D5FDB80008BB03C /* AutoplaySettingsViewController.swift in Sources */,

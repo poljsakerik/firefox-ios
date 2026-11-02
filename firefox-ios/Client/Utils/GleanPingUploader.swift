@@ -45,6 +45,14 @@ struct GleanPingUploader: PingUploader {
     }
 }
 
+/// Drops every ping, so a build with uploads off has no route to a telemetry server.
+struct DiscardingPingUploader: PingUploader {
+    func upload(request: CapablePingUploadRequest,
+                callback: @escaping @Sendable (UploadResult) -> Void) {
+        callback(.incapable(unused: 0))
+    }
+}
+
 /// Adding a protocol on top of the `Glean.PingUploadRequest` so we can unit tests
 protocol GleanPingUploadRequest {
     var url: String { get }

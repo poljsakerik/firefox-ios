@@ -2,6 +2,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/
 
+import Common
 import Foundation
 import Shared
 
@@ -34,6 +35,11 @@ class BreachAlertsClient: BreachAlertsClientProtocol {
 
     /// Makes a header-only request to an endpoint and hands off the endpoint's etag to a completion handler.
     func fetchEtag(endpoint: Endpoint, profile: Profile, completion: @escaping @Sendable (_ etag: String?) -> Void) {
+        guard MirlumiBuild.usesRemoteConfiguration else {
+            completion(nil)
+            return
+        }
+
         guard let url = URL(string: endpoint.rawValue) else { return }
         var request = URLRequest(url: url)
         request.httpMethod = "HEAD"
@@ -59,6 +65,11 @@ class BreachAlertsClient: BreachAlertsClientProtocol {
 
     /// Makes a network request to an endpoint and hands off the result to a completion handler.
     func fetchData(endpoint: Endpoint, profile: Profile, completion: @escaping @Sendable (_ result: Maybe<Data>) -> Void) {
+        guard MirlumiBuild.usesRemoteConfiguration else {
+            completion(Maybe(failure: BreachAlertsError(description: "breach alerts are off")))
+            return
+        }
+
         guard let url = URL(string: endpoint.rawValue) else { return }
 
         dataTask?.cancel()

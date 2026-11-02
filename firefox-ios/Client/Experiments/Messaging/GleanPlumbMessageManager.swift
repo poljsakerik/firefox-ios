@@ -101,6 +101,8 @@ final class GleanPlumbMessageManager: GleanPlumbMessageManagerProtocol {
 
     /// Returns the next valid and triggered message for the surface, if one exists.
     public func getNextMessage(for surface: MessageSurfaceId) -> GleanPlumbMessage? {
+        guard MirlumiBuild.showsMarketingMessages else { return nil }
+
         // All these are non-expired, well formed, and descending priority ordered messages for a requested surface.
         return getNextMessage(for: surface, from: getMessages(messagingFeature.value()))
     }

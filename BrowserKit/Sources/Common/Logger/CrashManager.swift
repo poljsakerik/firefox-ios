@@ -120,7 +120,8 @@ public final class DefaultCrashManager: CrashManager, @unchecked Sendable {
     }
 
     public func setup(sendCrashReports: Bool) {
-        guard shouldSetup,
+        guard MirlumiBuild.sendsCrashReports,
+              shouldSetup,
               sendCrashReports,
               let dsn = sentryWrapper.dsn else {
             return

@@ -42,6 +42,11 @@ final class UnifiedAdsProvider: UnifiedAdsProviderInterface, Sendable {
     }
 
     func fetchTiles(completion: @escaping @Sendable (SponsoredTileResult) -> Void) {
+        guard MirlumiBuild.showsSponsoredContent else {
+            completion(.success([]))
+            return
+        }
+
         logger.log("Fetching tiles with ads client", level: .debug, category: .homepage)
         let mozAdRequests = TileOrder.placementOrder.map {
             MozAdsPlacementRequest(iabContent: nil, placementId: $0)

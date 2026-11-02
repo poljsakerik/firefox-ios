@@ -19,6 +19,8 @@ struct SKAdNetworkUpdater: ConversionValueUpdater {
     }
 
     func update(conversionValue: ConversionValue) {
+        guard MirlumiBuild.reportsInstallAttribution else { return }
+
         // Apple declares the `coarseValue:lockWindow:` overload as available from iOS 16.1,
         // but it seems like the selector is missing on iOS 16.1.0 devices and only present from 16.1.1
         // onwards. Calling it on 16.1.0 crashes with an unrecognized selector exception,

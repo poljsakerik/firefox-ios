@@ -18,6 +18,7 @@ extension ASRemoteSettingsCollection {
     /// Convenience. Creates a client using the default service.
     /// - Returns: a Remote Settings client which can be used to fetch records from the backend.
     func makeClient() -> RemoteSettingsClient? {
+        guard MirlumiBuild.usesRemoteConfiguration else { return nil }
         let profile: Profile = AppContainer.shared.resolve()
         return profile.remoteSettingsService.makeClient(collectionName: rawValue)
     }

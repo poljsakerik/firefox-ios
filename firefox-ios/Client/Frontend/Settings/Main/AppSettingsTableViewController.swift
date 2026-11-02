@@ -326,13 +326,15 @@ class AppSettingsTableViewController: SettingsTableViewController,
         setupDataSettings()
         var settings = [SettingSection]()
         settings += getDefaultBrowserSetting()
-        settings += getAccountSetting()
+        if MirlumiBuild.usesFirefoxAccounts {
+            settings += getAccountSetting()
+        }
         settings += getGeneralSettings()
         settings += getPrivacySettings()
         settings += getSupportSettings()
         settings += getAboutSettings()
 
-        if showDebugSettings {
+        if MirlumiBuild.showsDebugMenu, showDebugSettings {
             settings += getDebugSettings()
         }
 
@@ -390,7 +392,7 @@ class AppSettingsTableViewController: SettingsTableViewController,
         }
 
         // For users whose devices support alternate app icons, add the App Icon setting
-        if UIApplication.shared.supportsAlternateIcons {
+        if MirlumiBuild.showsMarketingMessages, UIApplication.shared.supportsAlternateIcons {
             generalSettings.append(
                 AppIconSetting(
                     theme: currentTheme(),
@@ -399,7 +401,7 @@ class AppSettingsTableViewController: SettingsTableViewController,
             )
         }
 
-        if summarizerNimbusUtils.isSummarizeFeatureEnabled {
+        if MirlumiBuild.usesRemoteConfiguration, summarizerNimbusUtils.isSummarizeFeatureEnabled {
             generalSettings.append(SummarizeSetting(settings: self, settingsDelegate: parentCoordinator))
         }
 
@@ -464,9 +466,8 @@ class AppSettingsTableViewController: SettingsTableViewController,
     }
 
     private func getSupportSettings() -> [SettingSection] {
-        var supportSettings = [
+        var supportSettings: [Setting] = [
             ShowIntroductionSetting(settings: self, settingsDelegate: self),
-            SendFeedbackSetting(settingsDelegate: parentCoordinator),
         ]
 
         // Only add this toggle to the Settings if Sent from Firefox feature flag is enabled from Nimbus
@@ -481,22 +482,6 @@ class AppSettingsTableViewController: SettingsTableViewController,
             )
         }
 
-        guard let sendTechnicalDataSetting,
-              let sendDailyUsagePingSetting,
-              let studiesToggleSetting,
-              let rolloutsToggleSetting,
-              let sendCrashReportsSetting else {
-            return []
-        }
-
-        supportSettings.append(contentsOf: [
-            sendTechnicalDataSetting,
-            studiesToggleSetting,
-            rolloutsToggleSetting,
-            sendDailyUsagePingSetting,
-            sendCrashReportsSetting
-        ])
-
         supportSettings.append(contentsOf: [
             OpenSupportPageSetting(delegate: settingsDelegate,
                                    theme: currentTheme(),
@@ -509,10 +494,10 @@ class AppSettingsTableViewController: SettingsTableViewController,
 
     private func getAboutSettings() -> [SettingSection] {
         let aboutSettings = [
-            AppStoreReviewSetting(settingsDelegate: parentCoordinator),
             VersionSetting(settingsDelegate: self),
             LicenseAndAcknowledgementsSetting(settingsDelegate: parentCoordinator),
-            YourRightsSetting(settingsDelegate: parentCoordinator)
+            YourRightsSetting(settingsDelegate: parentCoordinator),
+            MirlumiSourceSetting(settingsDelegate: parentCoordinator)
         ]
 
         return [SettingSection(title: NSAttributedString(string: .AppSettingsAbout),

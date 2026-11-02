@@ -82,23 +82,6 @@ features:
               prerequisites:
                 - ALWAYS
               uiVariant: modern
-            sign-to-sync-modern:
-              card-type: basic
-              order: 30
-              title: Onboarding/Onboarding.Modern.Sync.Title.v140
-              body: Onboarding/Onboarding.Modern.Sync.Description.v140
-              image: sync-with-icons
-              buttons:
-                primary:
-                  title: Onboarding/Onboarding.Modern.Sync.SignIn.Action.v140
-                  action: sync-sign-in
-                secondary:
-                  title: Onboarding/Onboarding.Modern.Sync.Skip.Action.v140
-                  action: forward-one-card
-              onboarding-type: fresh-install
-              prerequisites:
-                - ALWAYS
-              uiVariant: modern
             customization-toolbar-modern:
               card-type: multiple-choice
               order: 20
@@ -163,23 +146,6 @@ features:
                   - Onboarding/DefaultBrowserPopup.FirstLabel.v114
                   - Onboarding/DefaultBrowserPopup.SecondLabel.v114
                   - Onboarding/DefaultBrowserPopup.ThirdLabel.v114
-              onboarding-type: fresh-install
-              prerequisites:
-                - ALWAYS
-              uiVariant: japan
-            sign-to-sync-modern-japan:
-              card-type: basic
-              order: 30
-              title: Onboarding/Onboarding.Modern.Sync.Title.v145
-              body: Onboarding/Onboarding.Modern.Sync.Description.v145
-              image: sync-with-icons-japan
-              buttons:
-                primary:
-                  title: Onboarding/Onboarding.Modern.Sync.SignIn.Action.v145
-                  action: sync-sign-in
-                secondary:
-                  title: Onboarding/Onboarding.Modern.Sync.Skip.Action.v145
-                  action: forward-one-card
               onboarding-type: fresh-install
               prerequisites:
                 - ALWAYS
@@ -295,23 +261,6 @@ features:
                 - title: Onboarding/Onboarding.Modern.BrandRefresh.Customization.Theme.Dark.v148
                   image: theme-dark-japan
                   action: theme-dark
-              onboarding-type: fresh-install
-              prerequisites:
-                - ALWAYS
-              uiVariant: brandRefresh
-            sign-to-sync-brand-refresh:
-              card-type: basic
-              order: 30
-              title: Onboarding/Onboarding.Modern.BrandRefresh.Sync.Title.v148
-              body: Onboarding/Onboarding.Modern.BrandRefresh.Sync.Description.v148
-              image: sync-with-icons-brand-refresh
-              buttons:
-                primary:
-                  title: Onboarding/Onboarding.Modern.BrandRefresh.Sync.SignIn.Action.v148
-                  action: sync-sign-in
-                secondary:
-                  title: Onboarding/Onboarding.Modern.BrandRefresh.Sync.Skip.Action.v148
-                  action: forward-one-card
               onboarding-type: fresh-install
               prerequisites:
                 - ALWAYS

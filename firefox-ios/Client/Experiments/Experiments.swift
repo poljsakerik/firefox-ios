@@ -166,7 +166,9 @@ enum Experiments {
                                      description: err.localizedDescription)
         }
 
-        let initialExperiments = Bundle.main.url(forResource: "initial_experiments", withExtension: "json")
+        let initialExperiments = MirlumiBuild.usesRemoteConfiguration
+            ? Bundle.main.url(forResource: "initial_experiments", withExtension: "json")
+            : nil
 
         guard let dbPath = Experiments.dbPath else {
             DefaultLogger.shared.log("Nimbus didn't get to create, because of a nil dbPath",
@@ -319,7 +321,9 @@ enum Experiments {
 
         // This does its work on another thread, downloading the experiment recipes
         // for the next run. It should be the last thing we do before returning.
-        nimbus.fetchExperiments()
+        if MirlumiBuild.usesRemoteConfiguration {
+            nimbus.fetchExperiments()
+        }
     }
 
     /// Maps each feature ID to the branch slug the user is enrolled in. Features the user is not enrolled in are

@@ -130,6 +130,11 @@ final class ASSearchEngineProvider: SearchEngineProvider, Sendable {
 
     private func getUnorderedBundledEnginesFor(locale: LocaleProvider,
                                                completion: @escaping ([OpenSearchEngine]) -> Void ) {
+        guard MirlumiBuild.usesRemoteConfiguration else {
+            completion(MirlumiSearchEngines.bundled())
+            return
+        }
+
         let localeCode = ASSearchEngineUtilities.localeCode(from: locale)
         let region = locale.regionCode(fallback: "US")
         let logger = self.logger

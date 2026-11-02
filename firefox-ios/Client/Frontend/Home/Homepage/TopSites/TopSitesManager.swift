@@ -106,7 +106,7 @@ final class TopSitesManager: TopSitesManagerInterface, UserFeaturePreferenceProv
 
     // MARK: Sponsored tiles (Unified Tiles)
     func fetchSponsoredSites() async -> [Site] {
-        guard shouldLoadSponsoredTiles else { return [] }
+        guard MirlumiBuild.showsSponsoredContent, shouldLoadSponsoredTiles else { return [] }
         return await fetchSponsoredSitesWithTimeout()
     }
 

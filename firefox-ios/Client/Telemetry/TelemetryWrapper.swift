@@ -93,7 +93,8 @@ class TelemetryWrapper: TelemetryWrapperProtocol,
         migratePathComponentInDocumentsDirectory("MozTelemetry-Default-mobile-event", to: .cachesDirectory)
         migratePathComponentInDocumentsDirectory("eventArray-MozTelemetry-Default-mobile-event.json", to: .cachesDirectory)
 
-        let sendUsageData = profile.prefs.boolForKey(AppConstants.prefSendUsageData) ?? true
+        let sendUsageData = MirlumiBuild.sendsTelemetry
+            && (profile.prefs.boolForKey(AppConstants.prefSendUsageData) ?? true)
 
         // Initialize Glean
         initGlean(profile, sendUsageData: sendUsageData)
@@ -101,7 +102,8 @@ class TelemetryWrapper: TelemetryWrapperProtocol,
 
     /// Never follows `prefSendUsageData`: `usage-reporting` is `follows_collection_enabled: false`.
     func shouldSendDailyUsagePing(prefs: Prefs) -> Bool {
-        return prefs.boolForKey(AppConstants.prefSendDailyUsagePing) ?? AppConstants.defaultSendDailyUsagePing
+        return MirlumiBuild.sendsTelemetry
+            && (prefs.boolForKey(AppConstants.prefSendDailyUsagePing) ?? AppConstants.defaultSendDailyUsagePing)
     }
 
     @MainActor
@@ -130,8 +132,8 @@ class TelemetryWrapper: TelemetryWrapperProtocol,
             GleanMetrics.LegacyIds.clientId.set(uuid)
         }
 
-        GleanMetrics.Pings.shared.usageDeletionRequest.setEnabled(enabled: true)
-        GleanMetrics.Pings.shared.onboardingOptOut.setEnabled(enabled: true)
+        GleanMetrics.Pings.shared.usageDeletionRequest.setEnabled(enabled: MirlumiBuild.sendsTelemetry)
+        GleanMetrics.Pings.shared.onboardingOptOut.setEnabled(enabled: MirlumiBuild.sendsTelemetry)
 
         if shouldSendDailyUsagePing(prefs: profile.prefs) {
             gleanUsageReportingMetricsService.start()
@@ -144,7 +146,13 @@ class TelemetryWrapper: TelemetryWrapperProtocol,
 
         // Initialize Glean telemetry
         let gleanConfig: Configuration
-        if let pingUploader = GleanPingUploader() {
+        if !MirlumiBuild.sendsTelemetry {
+            gleanConfig = Configuration(
+                channel: AppConstants.buildChannel.rawValue,
+                logLevel: .off,
+                httpClient: DiscardingPingUploader()
+            )
+        } else if let pingUploader = GleanPingUploader() {
             gleanConfig = Configuration(
                 channel: AppConstants.buildChannel.rawValue,
                 logLevel: .off,

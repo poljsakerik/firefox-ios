@@ -56,7 +56,7 @@ class MainMenuViewController: UIViewController,
     }
 
     private var bannerShown: Bool {
-        profile.prefs.boolForKey(PrefsKeys.defaultBrowserBannerShown) ?? false
+        !MirlumiBuild.showsMarketingMessages || (profile.prefs.boolForKey(PrefsKeys.defaultBrowserBannerShown) ?? false)
     }
 
     private var hasBeenExpanded = false
