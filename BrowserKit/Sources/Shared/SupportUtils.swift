@@ -8,50 +8,56 @@ import UIKit
 
 /// Utility functions related to SUMO and Webcompat
 public struct SupportUtils {
+    private static func mirlumiPage(_ path: String) -> URL? {
+        let isSlovenian = Locale.preferredLanguages.first?.hasPrefix("sl") ?? false
+        return URL(string: "https://\(isSlovenian ? "mirlumi.si" : "mirlumi.com")/\(path)")
+    }
+
+    private static var mirlumiSupport: URL? { mirlumiPage("podpora.html") }
+
     public static var URLForPrivateBrowsingLearnMore: URL? {
-        // Returns the predefined URL associated to private homepage message card learn more action.
-        return URL(string: "https://support.mozilla.org/en-US/kb/common-myths-about-private-browsing?as=u&utm_source=inproduct")
+        return mirlumiSupport
     }
 
     public static var URLForGetHelp: URL? {
-        // Returns the predefined URL associated to the menu's Get Help button action.
-        return URL(string: "https://support.mozilla.org/products/ios")
+        return mirlumiSupport
     }
 
     public static var URLForPocketLearnMore: URL? {
-        // Returns the predefined URL associated to homepage Pocket's Learn more action.
-        return URL(string: "https://www.mozilla.org/firefox/pocket/?utm_source=ff_ios")
+        return mirlumiSupport
     }
 
     public static var URLForTermsOfUse: URL? {
-        return URL(string: "https://www.mozilla.org/about/legal/terms/firefox/")
+        return mirlumiPage("pravno-obvestilo.html")
     }
 
     public static var URLForPrivacyNotice: URL? {
-        return URL(string: "https://www.mozilla.org/privacy/firefox/")
+        return mirlumiPage("politika-zasebnosti.html")
     }
 
     public static var URLForUpdatedPrivacyNotice: URL? {
-        return URL(string: "https://www.mozilla.org/privacy/firefox/next/")
+        return mirlumiPage("politika-zasebnosti.html")
     }
 
     public static var URLForUpdatedPrivacyNoticeDiff: URL? {
-        return URL(string: "https://www.mozilla.org/privacy/firefox/update/")
+        return mirlumiPage("politika-zasebnosti.html")
     }
 
     public static var URLForRelayAccountManagement: URL? {
-        return URL(string: "https://relay.firefox.com/accounts/profile")
+        return mirlumiSupport
     }
 
     public static var URLForRelayMaskLearnMoreArticle: URL? {
-        return URL(string: "https://support.mozilla.org/en-US/kb/relay-masks-ios")
+        return mirlumiSupport
     }
 
     public static var URLForConnectionNotSecureLearnMore: URL? {
-        return URL(string: "https://support.mozilla.org/en-US/kb/what-does-your-connection-is-not-secure-mean")
+        return mirlumiSupport
     }
 
     public static func URLForTopic(_ topic: String, useMobilePath: Bool = true) -> URL? {
+        if !MirlumiBuild.usesRemoteConfiguration { return mirlumiSupport }
+
         // Construct a NSURL pointing to a specific topic on SUMO. The topic should be a non-escaped string. It will
         // be properly escaped by this function.
         //

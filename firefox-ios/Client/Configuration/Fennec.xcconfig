@@ -21,5 +21,9 @@ OTHER_LDFLAGS = -ObjC -fprofile-instr-generate -Xlinker -no_application_extensio
 SWIFT_OPTIMIZATION_LEVEL = -Onone
 ENABLE_NS_ASSERTIONS = YES
 
+// Mirlumi ships English and Slovenian only; other languages fall back to English.
+EXCLUDED_SOURCE_FILE_NAMES = *.lproj/*
+INCLUDED_SOURCE_FILE_NAMES = */en.lproj/* */en-US.lproj/* */sl.lproj/* */Base.lproj/*
+
 // Developer-specific signing overrides; see docs/ios-signing.md in the Mirlumi repository.
 #include? "Mirlumi.local.xcconfig"

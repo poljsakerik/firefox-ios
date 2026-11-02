@@ -104,7 +104,7 @@
 "MainMenu.SettingsSection.AccessibilityLabels.Settings.v132" = "Nastavitve";
 
 /* On the main menu, the accessibility labels for the action that will take the user to a What's New in Firefox popup. %@ is the app name (e.g. Firefox). */
-"MainMenu.SettingsSection.AccessibilityLabels.WhatsNew.v132" = "Novo v %@u";
+"MainMenu.SettingsSection.AccessibilityLabels.WhatsNew.v132" = "Novo v %@ju";
 
 /* On the main menu, the title for the action that will take the user to the Customize Hopegape section in the settings screen. */
 "MainMenu.SettingsSection.CustomizeHomepage.Title.v131" = "Prilagodi domačo stran";
@@ -116,7 +116,7 @@
 "MainMenu.SettingsSection.Settings.Title.v131" = "Nastavitve";
 
 /* On the main menu, the title for the action that will take the user to a What's New in Firefox popup. %@ is the app name (e.g. Firefox). */
-"MainMenu.SettingsSection.WhatsNew.Title.v131" = "Novo v %@u";
+"MainMenu.SettingsSection.WhatsNew.Title.v131" = "Novo v %@ju";
 
 /* On the main menu, at the top, title for a badge next to Protections that opens the ad blocker setting. */
 "MainMenu.SiteProtection.AdBlocker.Title.v153" = "Blokiranje oglasov";

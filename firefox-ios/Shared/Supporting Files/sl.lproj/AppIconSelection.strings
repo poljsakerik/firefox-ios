@@ -2,7 +2,7 @@
 "Settings.AppIconSelection.Accessibility.AppIconSelectedLabel.v136" = "Izbrana";
 
 /* On the app icon customization screen, where you can select an alternate icon for the app, this is the accessibility hint describing what happens when you select an app icon row. %@ is the app name. */
-"Settings.AppIconSelection.Accessibility.AppIconSelectionHint.v136" = "Izberite ikono %@a";
+"Settings.AppIconSelection.Accessibility.AppIconSelectionHint.v136" = "Izberite ikono %@ja";
 
 /* On the app icon customization screen where you can select an alternate icon for the app, this is the accessibility label describing an unfilled checkbox for an unselected app icon option. */
 "Settings.AppIconSelection.Accessibility.AppIconUnselectedLabel.v136" = "Ni izbrana";

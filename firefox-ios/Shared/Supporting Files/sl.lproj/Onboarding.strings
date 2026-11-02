@@ -119,13 +119,13 @@
 "Onboarding.Modern.BrandRefresh.Marketing.Title.v148" = "Pomagajte nam zgraditi boljši internet";
 
 /* Description for the notification card in the v148 brand refresh onboarding flow. %@ is the app name (e.g. Firefox). */
-"Onboarding.Modern.BrandRefresh.Notification.Description.v148" = "Odkrijte možnosti za zasebnost v %@u in si varno pošiljajte zavihke med napravami.";
+"Onboarding.Modern.BrandRefresh.Notification.Description.v148" = "Odkrijte možnosti za zasebnost v %@ju in si varno pošiljajte zavihke med napravami.";
 
 /* Button to skip the notification card in the v148 brand refresh onboarding flow. */
 "Onboarding.Modern.BrandRefresh.Notification.Skip.Action.v148" = "Ne zdaj";
 
 /* Title for the notification card in the v148 brand refresh onboarding flow. %@ is the app name (e.g. Firefox). */
-"Onboarding.Modern.BrandRefresh.Notification.Title.v148" = "Obvestila vam pomagajo, da ostanete varni v %@u";
+"Onboarding.Modern.BrandRefresh.Notification.Title.v148" = "Obvestila vam pomagajo, da ostanete varni v %@ju";
 
 /* Button to turn on notifications in the v148 brand refresh onboarding flow. */
 "Onboarding.Modern.BrandRefresh.Notification.TurnOn.Action.v148" = "Vklopi obvestila";
@@ -158,7 +158,7 @@
 "Onboarding.Modern.BrandRefresh.TermsOfUse.ManagePreferenceAgreement.v148" = "Za pomoč pri izboljšavah brskalnika %1$@ organizaciji %2$@ pošilja diagnostične podatke in podatke o uporabi. %3$@";
 
 /* Agreement text for Privacy Notice in the v148 brand refresh onboarding flow. %1$@ is the app name (e.g. Firefox), %2$@ is the Privacy Notice link button that redirects the user to the Privacy Notice page. */
-"Onboarding.Modern.BrandRefresh.TermsOfUse.PrivacyNoticeAgreement.v148" = "%1$@u je mar za vašo zasebnost. Preberite več v našem %2$@.";
+"Onboarding.Modern.BrandRefresh.TermsOfUse.PrivacyNoticeAgreement.v148" = "%1$@ju je mar za vašo zasebnost. Preberite več v našem %2$@.";
 
 /* The text for the Privacy Notice link button in the v148 brand refresh onboarding flow. */
 "Onboarding.Modern.BrandRefresh.TermsOfUse.PrivacyNoticeLink.v148" = "obvestilu o zasebnosti";
@@ -167,7 +167,7 @@
 "Onboarding.Modern.BrandRefresh.TermsOfUse.TermsOfUseAgreement.v148" = "Z nadaljevanjem se strinjate s %@.";
 
 /* The text for the Terms of Use link button in the v148 brand refresh onboarding flow. %@ is the app name (e.g. Firefox). */
-"Onboarding.Modern.BrandRefresh.TermsOfUse.TermsOfUseLink.v148" = "pogoji uporabe %@a";
+"Onboarding.Modern.BrandRefresh.TermsOfUse.TermsOfUseLink.v148" = "pogoji uporabe %@ja";
 
 /* Title for the Terms of Use card in the v148 brand refresh onboarding flow. */
 "Onboarding.Modern.BrandRefresh.TermsOfUse.Title.v148" = "Pripravite se na uporabo brez ovir";
@@ -281,10 +281,10 @@
 "Onboarding.Modern.TermsOfService.ManagePreferenceAgreement.v145" = "Za pomoč pri izboljšavah brskalnika %1$@ organizaciji %2$@ pošilja diagnostične podatke in podatke o uporabi. %3$@";
 
 /* Agreement text for Privacy Notice in the Terms of Service screen. %1$@ is the app name (e.g. Firefox), %2$@ is for the Privacy Notice link button that redirect the user to the Privacy Notice page. */
-"Onboarding.Modern.TermsOfService.PrivacyNoticeAgreement.v140" = "%1$@u je mar za vašo zasebnost. Preberite več v našem %2$@.";
+"Onboarding.Modern.TermsOfService.PrivacyNoticeAgreement.v140" = "%1$@ju je mar za vašo zasebnost. Preberite več v našem %2$@.";
 
 /* Agreement text for Privacy Notice. %1$@ is the app name (e.g. Firefox), %2$@ is the placeholder for the Privacy Notice link. */
-"Onboarding.Modern.TermsOfService.PrivacyNoticeAgreement.v145" = "%1$@u je mar za vašo zasebnost. Preberite več v našem %2$@.";
+"Onboarding.Modern.TermsOfService.PrivacyNoticeAgreement.v145" = "%1$@ju je mar za vašo zasebnost. Preberite več v našem %2$@.";
 
 /* Title for the Privacy Notice button link, in the Terms of Service screen for redirecting the user to the Privacy Notice page. */
 "Onboarding.Modern.TermsOfService.PrivacyNoticeLink.v140" = "obvestilu o zasebnosti";
@@ -320,7 +320,7 @@
 "Onboarding.Modern.TermsOfService.TermsOfServiceAgreement.v145" = "Z nadaljevanjem se strinjate s %@.";
 
 /* The text for the Terms of Use link button. %@ is the app name (e.g. Firefox). */
-"Onboarding.Modern.TermsOfService.TermsOfUseLink.v145" = "pogoji uporabe %@a";
+"Onboarding.Modern.TermsOfService.TermsOfUseLink.v145" = "pogoji uporabe %@ja";
 
 /* Title for the Terms of Service screen in the onboarding process. */
 "Onboarding.Modern.TermsOfService.Title.v140" = "Nadgradite svoje brskanje";
@@ -329,7 +329,7 @@
 "Onboarding.Modern.TermsOfService.Title.v145" = "Prevzemite nadzor nad internetom";
 
 /* Title for the Terms of Use button link, in the Terms of Use screen for redirecting the user to the Terms of Use page. %@ is the app name (e.g. Firefox). */
-"Onboarding.Modern.TermsOfUse.TermsOfUseLink.v140" = "pogoji uporabe %@a";
+"Onboarding.Modern.TermsOfUse.TermsOfUseLink.v140" = "pogoji uporabe %@ja";
 
 /* Describes the action on the first onboarding page in our Onboarding screen. This indicates that the user will set their default browser to Firefox. */
 "Onboarding.Modern.Welcome.ActionTreatementA.v140" = "Nastavi kot privzeti brskalnik";
@@ -356,7 +356,7 @@
 "Onboarding.Modern.Welcome.Title.v145" = "Poslovite se od vsiljivih sledilcev";
 
 /* Body of the home screen popup requesting permission to send notifications. It emphasizes how notifications keep you updated on news. %@ is a placeholder for the app name (e.g., Firefox). */
-"Onboarding.MultiDay.HomeScreenNotificationsPopup.BodyText.v159" = "Bodite na tekočem s %@ovimi novicami.";
+"Onboarding.MultiDay.HomeScreenNotificationsPopup.BodyText.v159" = "Bodite na tekočem s %@jevimi novicami.";
 
 /* Button on the home screen popup requesting notification permissions. Tapping this button accepts the permission request. */
 "Onboarding.MultiDay.HomeScreenNotificationsPopup.EnableButtonText.v158" = "Omogoči obvestila";
@@ -371,7 +371,7 @@
 "Onboarding.MultiDay.NotificationCard.AcceptButtonText.v159" = "Omogoči obvestila";
 
 /* Body of the onboarding card requesting permissions to send notifications, with examples of notifications the user will receive. %@ is the name of the app (e.g., Firefox). */
-"Onboarding.MultiDay.NotificationCard.BodyText.v159" = "Prejemajte %@ova obvestila o zaščiti, nasvete in poročila o zasebnosti.";
+"Onboarding.MultiDay.NotificationCard.BodyText.v159" = "Prejemajte %@jeva obvestila o zaščiti, nasvete in poročila o zasebnosti.";
 
 /* Secondary button on the onboarding card requesting permission to send notifications. Tapping this button declines the permission request.
 Secondary button on the onboarding card that prompts users to enable syncing for their account data. Tapping this button dismisses the prompt and closes the card. */
@@ -399,7 +399,7 @@ Secondary button on the onboarding card that prompts users to enable syncing for
 "Onboarding.Notification.Skip.Action.v115" = "Preskoči";
 
 /* String used to describe the title of the notification onboarding page in our Onboarding screens. %@ is the app name (e.g. Firefox). */
-"Onboarding.Notification.Title.v120" = "Obvestila vam pomagajo, da ostanete varni v %@u";
+"Onboarding.Notification.Title.v120" = "Obvestila vam pomagajo, da ostanete varni v %@ju";
 
 /* String used to describe the option to continue to ask for the notification permission in Firefox Onboarding screens. */
 "Onboarding.Notification.TurnOnNotifications.Action.v114" = "Vklopi obvestila";
@@ -426,7 +426,7 @@ Secondary button on the onboarding card that prompts users to enable syncing for
 "Onboarding.TermsOfService.ManagePreferenceAgreement.v135" = "Za pomoč pri izboljšavah brskalnika %1$@ organizaciji %2$@ pošilja diagnostične podatke in podatke o uporabi. %3$@";
 
 /* Agreement text for Privacy Notice in the Terms of Service screen. %1$@ is the app name (e.g. Firefox), %2$@ is for the Privacy Notice link button that redirect the user to the Privacy Notice page. */
-"Onboarding.TermsOfService.PrivacyNoticeAgreement.v135" = "%1$@u je mar za vašo zasebnost. Preberite več v našem %2$@.";
+"Onboarding.TermsOfService.PrivacyNoticeAgreement.v135" = "%1$@ju je mar za vašo zasebnost. Preberite več v našem %2$@.";
 
 /* Title for the Privacy Notice button link, in the Terms of Service screen for redirecting the user to the Privacy Notice page. */
 "Onboarding.TermsOfService.PrivacyNoticeLink.v135" = "obvestilu o zasebnosti";
@@ -456,10 +456,10 @@ Secondary button on the onboarding card that prompts users to enable syncing for
 "Onboarding.TermsOfService.TermsOfServiceAgreement.v135" = "Z nadaljevanjem se strinjate s %@.";
 
 /* Title for the Terms of Service screen in the onboarding process. %@ is the app name (e.g. Firefox). */
-"Onboarding.TermsOfService.Title.v135" = "Dobrodošli v %@u";
+"Onboarding.TermsOfService.Title.v135" = "Dobrodošli v %@ju";
 
 /* Title for the Terms of Use button link, in the Terms of Use screen for redirecting the user to the Terms of Use page. %@ is the app name (e.g. Firefox). */
-"Onboarding.TermsOfUse.TermsOfUseLink.v136" = "pogoji uporabe %@a";
+"Onboarding.TermsOfUse.TermsOfUseLink.v136" = "pogoji uporabe %@ja";
 
 /* Accessibility label for the wallpaper onboarding modal displayed on top of the homepage. This describes to the user that which type of wallpaper they are seeing. */
 "Onboarding.Wallpaper.Accessibility.Classic.v114" = "Klasično ozadje";
@@ -486,7 +486,7 @@ Secondary button on the onboarding card that prompts users to enable syncing for
 "Onboarding.Welcome.ActionTreatementA.v114" = "Nastavi kot privzeti brskalnik";
 
 /* Accessibility label for close button that dismisses the welcome onboarding screen. %@ is the app name (e.g. Firefox). */
-"Onboarding.Welcome.Close.AccessibilityLabel.v121" = "Zapri in zapusti uvod v %@";
+"Onboarding.Welcome.Close.AccessibilityLabel.v121" = "Zapri in zapusti uvod v %@ju";
 
 /* String used to describes the description of what Firefox is on the welcome onboarding page for current version in our Onboarding screens. */
 "Onboarding.Welcome.Description.TreatementA.v120" = "Naš neprofitni brskalnik preprečuje podjetjem, da bi vas skrivaj spremljala po spletu.";

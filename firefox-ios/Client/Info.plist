@@ -134,15 +134,15 @@
 		<true/>
 	</dict>
 	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>This lets Firefox transcribe your audio.</string>
+	<string>This lets Mirlumi transcribe your audio.</string>
 	<key>NSCameraUsageDescription</key>
-	<string>Firefox can use your camera to scan QR codes or take photos and video.</string>
+	<string>Mirlumi can use your camera to scan QR codes or take photos and video.</string>
 	<key>NSFaceIDUsageDescription</key>
-	<string>Firefox requires Face ID to access your saved passwords and payment methods.</string>
+	<string>Mirlumi requires Face ID to access your saved passwords and payment methods.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Websites you visit may request your location.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Firefox uses your microphone to record and upload audio.</string>
+	<string>Mirlumi uses your microphone to record and upload audio.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>This lets you save photos.</string>
 	<key>NSSupportsLiveActivities</key>
@@ -197,7 +197,7 @@
 		</dict>
 		<dict>
 			<key>UIApplicationShortcutItemIconFile</key>
-			<string>logoFirefoxLarge</string>
+			<string>logoMirlumiLarge</string>
 			<key>UIApplicationShortcutItemTitle</key>
 			<string>App Icon</string>
 			<key>UIApplicationShortcutItemType</key>

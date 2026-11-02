@@ -8,7 +8,7 @@
 "Addresses.Settings.SavedAddressesSectionTitle.v124" = "SHRANJENI NASLOVI";
 
 /* Title text for the content unavailable view informing users they can create or add new addresses. %@ is the name of the app. */
-"Addresses.Settings.SaveToFirefox.Title.v130" = "Shranjuj naslove v %@";
+"Addresses.Settings.SaveToFirefox.Title.v130" = "Shranjuj naslove v %@ju";
 
 /* Description text for the content unavailable view informing users they can create or add new addresses. */
 "Addresses.Settings.SecureSaveInfo.Description.v130" = "Varno si shranite podatke za kasnejši hiter dostop.";
@@ -29,7 +29,7 @@
 "CreditCard.Settings.EmptyListDescription.v112" = "Varno shranite podatke o kartici in naslednjič hitreje zaključite nakup.";
 
 /* Title label for when there are no credit cards shown in credit card list in autofill settings screen. %@ is the product name and should not be altered. */
-"CreditCard.Settings.EmptyListTitle.v122" = "Shranjuj kartice v %@";
+"CreditCard.Settings.EmptyListTitle.v122" = "Shranjuj kartice v %@ju";
 
 /* Accessibility label for a credit card list item in autofill settings screen. %1$@ is the credit card issuer (e.g. Visa), %2$@ is the name of the credit card holder, %3$@ is the last 4 digits of the credit card, %4$@ is the card's expiration date. */
 "CreditCard.Settings.ListItemA11y.v118" = "%1$@, imetnik %2$@, končuje se na %3$@, velja do %4$@";
@@ -119,7 +119,7 @@
 "Settings.AIControls.HeaderCard.Message.v151" = "Vključno s tem, ali želite uporabljati možnosti, izboljšane z umetno inteligenco.";
 
 /* This is the title for the Header Card under the AI Controls settings section. %@ is the app name (e.g. Firefox). */
-"Settings.AIControls.HeaderCard.Title.v151" = "V %@u imate vedno izbiro";
+"Settings.AIControls.HeaderCard.Title.v151" = "V %@ju imate vedno izbiro";
 
 /* In the settings menu, in the General section, this is the title for the AI Controls settings section */
 "Settings.AIControls.Title.v150" = "Nadzor UI";
@@ -236,7 +236,7 @@
 "Settings.Notifications.SyncNotificationsTitle.v112" = "Sinhronizacija";
 
 /* This is the footer title informing the user needs to turn on notifications in iOS Settings. Both %1$@ and %2$@ are the app name (e.g. Firefox). */
-"Settings.Notifications.SystemNotificationsDisabledMessage.v112" = "Izklopili ste vsa obvestila %1$@a. Vklopite jih lahko v Nastavitve naprave > Obvestila > %2$@";
+"Settings.Notifications.SystemNotificationsDisabledMessage.v112" = "Izklopili ste vsa obvestila %1$@ja. Vklopite jih lahko v Nastavitve naprave > Obvestila > %2$@";
 
 /* This is the description for the setting that toggles Tips and Features feature in the settings menu under the Notifications section. %@ is the app name (e.g. Firefox). */
 "Settings.Notifications.TipsAndFeaturesNotificationsStatus.v112" = "Spoznajte uporabne funkcije in kako kar najbolje izkoristiti %@.";
@@ -248,7 +248,7 @@
 "Settings.Notifications.Title.v112" = "Obvestila";
 
 /* This is the title informing the user that they need to turn on notifications in iOS Settings. %@ is the app name (e.g. Firefox). */
-"Settings.Notifications.TurnOnNotificationsMessage.v112" = "Pojdite v nastavitve naprave in vklopite obvestila v %@";
+"Settings.Notifications.TurnOnNotificationsMessage.v112" = "Pojdite v nastavitve naprave in vklopite obvestila v %@ju";
 
 /* This is the title informing the user that they need to turn on notifications in iOS Settings. */
 "Settings.Notifications.TurnOnNotificationsTitle.v112" = "Vklopi obvestila";
@@ -272,7 +272,7 @@
 "Settings.Search.Accessibility.DefaultSearchEngine.v121" = "Privzeti iskalnik";
 
 /* Accessibility label for Learn more about Firefox Suggest. */
-"Settings.Search.Accessibility.LearnAboutSuggestions.v124" = "Več o Firefoxovih predlogih";
+"Settings.Search.Accessibility.LearnAboutSuggestions.v124" = "Več o Mirlumijevih predlogih";
 
 /* Title for alternate search engines settings section in the Search page in the Settings menu. */
 "Settings.Search.AlternateSearchEngines.Title.v124.v2" = "Pomožni iskalniki";
@@ -305,13 +305,13 @@
 "Settings.Search.ShowSuggestions.v121" = "Prikazuj predloge iskanja";
 
 /* In the Search page of the Settings menu, the title for the Firefox Suggest settings section. */
-"Settings.Search.Suggest.AddressBarSetting.Title.v124" = "Naslovna vrstica – Firefoxovi predlogi";
+"Settings.Search.Suggest.AddressBarSetting.Title.v124" = "Naslovna vrstica – Mirlumijevi predlogi";
 
 /* In the search page of the Settings menu, the title for the link to the SUMO Page about Firefox Suggest. */
-"Settings.Search.Suggest.LearnAboutSuggestions.v124" = "Več o Firefoxovih predlogih";
+"Settings.Search.Suggest.LearnAboutSuggestions.v124" = "Več o Mirlumijevih predlogih";
 
 /* Description for `Show in Private Sessions` toggle, located in `Address Bar - Firefox Suggest` section in the Search page in the Settings menu. */
-"Settings.Search.Suggest.PrivateSession.Description.v125" = "Prikazuj Firefoxove predloge v zasebnih sejah";
+"Settings.Search.Suggest.PrivateSession.Description.v125" = "Prikazuj Mirlumijeve predloge v zasebnih sejah";
 
 /* In the Search page of the Settings menu, the title for the setting to enable search browsing history. */
 "Settings.Search.Suggest.SearchBrowsingHistory.Title.v124" = "Iskanje po zgodovini iskanja";
@@ -323,7 +323,7 @@
 "Settings.Search.Suggest.SearchSyncedTabs.Title.v124" = "Iskanje po sinhroniziranih zavihkih";
 
 /* In the Search page of the Settings menu, the description for the setting to enable Suggestions from Firefox. %@ is the app name (e.g. Firefox). - Firefox. */
-"Settings.Search.Suggest.ShowNonSponsoredSuggestions.Description.v124.v2" = "Prejemajte predloge %@a, povezane z vašim iskanjem";
+"Settings.Search.Suggest.ShowNonSponsoredSuggestions.Description.v124.v2" = "Prejemajte predloge %@ja, povezane z vašim iskanjem";
 
 /* In the Search page of the Settings menu, the title for setting to enable Suggestions from the web in Firefox. */
 "Settings.Search.Suggest.ShowNonSponsoredSuggestions.Title.v124.v2" = "Predlogi s spleta";
@@ -380,7 +380,7 @@
 "Settings.TechnicalData.Link.v136" = "Več o tem";
 
 /* On the Settings screen, this is the subtitle text for a toggle which controls sending technical and interaction data. %@ is the app name (e.g. Firefox). */
-"Settings.TechnicalData.Message.v136" = "Podatki o vaši napravi, nastavitvi strojne opreme in uporabi nam pomagajo izboljševati zmogljivosti, delovanje in zanesljivost %@a.";
+"Settings.TechnicalData.Message.v136" = "Podatki o vaši napravi, nastavitvi strojne opreme in uporabi nam pomagajo izboljševati zmogljivosti, delovanje in zanesljivost %@ja.";
 
 /* On the Settings screen, this is the title text for a toggle which controls sending technical and interaction data. */
 "Settings.TechnicalData.Title.v136" = "Pošiljaj tehnične podatke in podatke o interakcijah";
@@ -439,3 +439,12 @@
 /* This is the title for the setting that toggles the Translation feature that allows users to translate web pages under the Translation settings section. */
 "Settings.Translation.ToggleTitle.v145" = "Omogoči prevajanje";
 
+
+/* Body of the first onboarding screen. Mirlumi is the product name. */
+"Mirlumi.Onboarding.Welcome.Body" = "Interna preizkusna različica, ki temelji na Firefoxu. Ne pošilja podatkov o uporabi.";
+
+/* Title of the About row that credits Firefox and opens the published source code. %@ is the app name. */
+"Mirlumi.Settings.BasedOnFirefox.Title" = "%@ temelji na brskalniku Firefox za iOS organizacije Mozilla.";
+
+/* Subtitle of the About row that credits Firefox and opens the published source code. */
+"Mirlumi.Settings.BasedOnFirefox.Status" = "Mozilla ga ne izdeluje in ne podpira. Izvorna koda: https://github.com/poljsakerik/firefox-ios";
