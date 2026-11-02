@@ -14,7 +14,7 @@ final class BackgroundFirefoxSuggestIngestUtility: BackgroundUtilityProtocol,
                                                    FeatureFlaggable,
                                                    UserFeaturePreferenceProvider,
                                                    @unchecked Sendable {
-    static let taskIdentifier = "org.mozilla.ios.firefox.suggest.ingest"
+    static let taskIdentifier = "app.mirlumi.browser.suggest.ingest"
 
     let firefoxSuggest: RustFirefoxSuggestProtocol?
     let logger: Logger

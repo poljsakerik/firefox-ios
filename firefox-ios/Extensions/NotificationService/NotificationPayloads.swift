@@ -17,6 +17,6 @@ struct NotificationSentTabs {
 
 struct NotificationCloseTabs {
     static let closeTabsKey = "closeRemoteTabs"
-    static let notificationCategoryId = "org.mozilla.ios.fxa.notification.category"
+    static let notificationCategoryId = "app.mirlumi.browser.fxa.notification.category"
     static let messageIdKey = "messageId"
 }

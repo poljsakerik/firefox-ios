@@ -26,7 +26,7 @@ final class DefaultUnifiedAdsCallbackTelemetry: UnifiedAdsCallbackTelemetry {
         logger: Logger = DefaultLogger.shared,
         sponsoredTileGleanTelemetry: SponsoredTileGleanTelemetry = DefaultSponsoredTileGleanTelemetry(),
         adsClientCallbackQueue: DispatchQueueInterface = DispatchQueue(
-            label: "org.mozilla.ios.unified-ads-callback-telemetry",
+            label: "app.mirlumi.browser.unified-ads-callback-telemetry",
             qos: .utility
         )
     ) {

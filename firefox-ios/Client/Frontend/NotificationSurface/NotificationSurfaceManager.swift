@@ -16,8 +16,8 @@ protocol NotificationSurfaceDelegate: AnyObject {
 // TODO: FXIOS-FXIOS-13583 - NotificationSurfaceManager should be concurrency safe
 class NotificationSurfaceManager: NotificationSurfaceDelegate, @unchecked Sendable {
     struct Constant {
-        static let notificationBaseId = "org.mozilla.ios.notification"
-        static let notificationCategoryId = "org.mozilla.ios.notification.category"
+        static let notificationBaseId = "app.mirlumi.browser.notification"
+        static let notificationCategoryId = "app.mirlumi.browser.notification.category"
         static let messageDelay: CGFloat = 3 // seconds
         static let messageIdKey = "messageId"
     }

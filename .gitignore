@@ -152,3 +152,5 @@ LicensePlistTemp
 # Claude Code
 .claude/settings.local.json
 .mcp.json
+# Mirlumi: developer-specific signing overrides
+firefox-ios/Client/Configuration/Mirlumi.local.xcconfig

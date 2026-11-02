@@ -41,7 +41,7 @@ public class ZoomLevelStore: @unchecked Sendable, ZoomLevelStorage {
     static let defaultZoomLimit: CGFloat = 1.0
 
     private let concurrentQueue = DispatchQueue(
-        label: "org.mozilla.ios.Fennec.zoomLevelStoreQueue",
+        label: "app.mirlumi.browser.zoomLevelStoreQueue",
         attributes: .concurrent
     )
 

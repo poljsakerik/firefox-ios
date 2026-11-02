@@ -26,7 +26,7 @@ final class ASAdBlockerListFetcher: AdBlockerListFetcherProtocol {
     /// thread pool — blocking the former hangs the UI, blocking the latter can starve every other
     /// task. `fetchAdBlockerListJSON()` hops onto this queue to keep that work fully off both.
     private static let fetchQueue = DispatchQueue(
-        label: "org.mozilla.ios.ASAdBlockerListFetcher",
+        label: "app.mirlumi.browser.ASAdBlockerListFetcher",
         qos: .utility
     )
 

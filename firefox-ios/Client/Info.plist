@@ -47,10 +47,10 @@
 	<string>$(APP_IDENTIFIER_PREFIX)</string>
 	<key>BGTaskSchedulerPermittedIdentifiers</key>
 	<array>
-		<string>org.mozilla.ios.sync.part1</string>
-		<string>org.mozilla.ios.sync.part2</string>
-		<string>org.mozilla.ios.surface.notification.refresh</string>
-		<string>org.mozilla.ios.firefox.suggest.ingest</string>
+		<string>app.mirlumi.browser.sync.part1</string>
+		<string>app.mirlumi.browser.sync.part2</string>
+		<string>app.mirlumi.browser.surface.notification.refresh</string>
+		<string>app.mirlumi.browser.suggest.ingest</string>
 	</array>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
@@ -150,7 +150,7 @@
 	<key>NSUserActivityTypes</key>
 	<array>
 		<string>QuickActionIntent</string>
-		<string>org.mozilla.ios.firefox.browsing</string>
+		<string>app.mirlumi.browser.browsing</string>
 	</array>
 	<key>NimbusURL</key>
 	<string>$(NIMBUS_URL)</string>

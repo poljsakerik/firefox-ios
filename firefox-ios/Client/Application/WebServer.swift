@@ -43,7 +43,7 @@ final class WebServer: WebServerProtocol, @unchecked Sendable {
     /// so funneling lifecycle operations through one serial queue (off the main thread)
     /// guarantees a start and a stop can never run concurrently, which would otherwise
     /// race during a background-to-foreground transition.
-    private let lifecycleQueue = DispatchQueue(label: "org.mozilla.ios.WebServer.lifecycle")
+    private let lifecycleQueue = DispatchQueue(label: "app.mirlumi.browser.WebServer.lifecycle")
 
     init(logger: Logger = DefaultLogger.shared) {
         credentials = URLCredential(user: sessionToken, password: "", persistence: .forSession)
