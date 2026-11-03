@@ -36,4 +36,20 @@ final class SettingsLockStringsTests: XCTestCase {
         XCTAssertEqual(String(format: format, locale: slovenian, 3), "3 sekunde")
         XCTAssertEqual(String(format: format, locale: slovenian, 30), "30 sekund")
     }
+
+    func testTheDigitsEnteredArePluralInBothLanguages() throws {
+        func progress(_ language: String, _ entered: Int) throws -> String {
+            let format = try bundle(language).localizedString(forKey: "Progress", value: nil, table: "SettingsLock")
+            return String(format: format, locale: Locale(identifier: language), entered, SettingsPIN.length)
+        }
+
+        XCTAssertEqual(try progress("en", 0), "0 digits of 4 entered")
+        XCTAssertEqual(try progress("en", 1), "1 digit of 4 entered")
+        XCTAssertEqual(try progress("en", 4), "4 digits of 4 entered")
+        XCTAssertEqual(try progress("sl", 0), "Vnesenih 0 števk od 4")
+        XCTAssertEqual(try progress("sl", 1), "Vnesena 1 števka od 4")
+        XCTAssertEqual(try progress("sl", 2), "Vneseni 2 števki od 4")
+        XCTAssertEqual(try progress("sl", 3), "Vnesene 3 števke od 4")
+        XCTAssertEqual(try progress("sl", 4), "Vnesene 4 števke od 4")
+    }
 }

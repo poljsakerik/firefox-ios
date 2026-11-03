@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- This Source Code Form is subject to the terms of the Mozilla Public
+   - License, v. 2.0. If a copy of the MPL was not distributed with this
+   - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
@@ -40,6 +43,26 @@
 			<string>%d minute</string>
 			<key>other</key>
 			<string>%d minut</string>
+		</dict>
+	</dict>
+	<key>Progress</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%1$#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Vnesena %1$d števka od %2$d</string>
+			<key>two</key>
+			<string>Vneseni %1$d števki od %2$d</string>
+			<key>few</key>
+			<string>Vnesene %1$d števke od %2$d</string>
+			<key>other</key>
+			<string>Vnesenih %1$d števk od %2$d</string>
 		</dict>
 	</dict>
 </dict>

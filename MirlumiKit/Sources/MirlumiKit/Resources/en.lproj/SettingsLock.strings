@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/ */
+
 /* The PIN that keeps Settings and other changes to the browser for parents. */
 "SetupTitle" = "Choose a PIN for Settings";
 "SetupBody" = "You’ll need these 4 digits to open Settings and to change anything else in the browser. Choose a PIN you’ll remember.";
@@ -14,6 +18,4 @@
 "LockedOut" = "Too many wrong PINs. Try again in %@.";
 "Cancel" = "Cancel";
 "Delete" = "Delete";
-/* Read by VoiceOver: digits entered so far, of the PIN's length. */
-"Progress" = "%1$d of %2$d digits entered";
 "PreferenceTitle" = "Change Settings PIN";
