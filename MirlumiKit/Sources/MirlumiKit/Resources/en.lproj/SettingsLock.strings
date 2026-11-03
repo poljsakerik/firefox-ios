@@ -1,0 +1,19 @@
+/* The PIN that keeps Settings and other changes to the browser for parents. */
+"SetupTitle" = "Choose a PIN for Settings";
+"SetupBody" = "You’ll need these 4 digits to open Settings and to change anything else in the browser. Choose a PIN you’ll remember.";
+"ConfirmTitle" = "Enter the PIN again";
+"ConfirmBody" = "Remember this PIN. You’ll need it every time you change something.";
+"UnlockTitle" = "Enter the Settings PIN";
+"UnlockBody" = "Settings are protected with a PIN.";
+"CurrentTitle" = "Enter your current PIN";
+"NewTitle" = "Choose a new PIN";
+"Changed" = "Settings PIN changed";
+"Wrong" = "Wrong PIN. Try again.";
+"Mismatch" = "The PINs didn’t match. Choose a PIN again.";
+/* %@ is a length of time, such as “30 seconds”. */
+"LockedOut" = "Too many wrong PINs. Try again in %@.";
+"Cancel" = "Cancel";
+"Delete" = "Delete";
+/* Read by VoiceOver: digits entered so far, of the PIN's length. */
+"Progress" = "%1$d of %2$d digits entered";
+"PreferenceTitle" = "Change Settings PIN";

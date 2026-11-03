@@ -1,0 +1,16 @@
+"SetupTitle" = "Izberite PIN za nastavitve";
+"SetupBody" = "Te 4 števke boste potrebovali, da odprete nastavitve ali kar koli drugega spremenite v brskalniku. Izberite PIN, ki si ga boste zapomnili.";
+"ConfirmTitle" = "Znova vnesite PIN";
+"ConfirmBody" = "Zapomnite si ta PIN. Potrebovali ga boste vsakič, ko boste kaj spremenili.";
+"UnlockTitle" = "Vnesite PIN za nastavitve";
+"UnlockBody" = "Nastavitve so zaščitene s PIN-om.";
+"CurrentTitle" = "Vnesite trenutni PIN";
+"NewTitle" = "Izberite nov PIN";
+"Changed" = "PIN za nastavitve je spremenjen";
+"Wrong" = "Napačen PIN. Poskusite znova.";
+"Mismatch" = "PIN-a se ne ujemata. Znova izberite PIN.";
+"LockedOut" = "Preveč napačnih vnosov. Poskusite znova čez %@.";
+"Cancel" = "Prekliči";
+"Delete" = "Izbriši";
+"Progress" = "Vnesenih števk: %1$d od %2$d";
+"PreferenceTitle" = "Spremeni PIN za nastavitve";
