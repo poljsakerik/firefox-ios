@@ -3,6 +3,7 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/
 
 import Common
+import MirlumiKit
 import UIKit
 import OnboardingKit
 
@@ -150,6 +151,7 @@ class SceneCoordinator: BaseCoordinator,
 
         add(child: browserCoordinator)
         browserCoordinator.start(with: launchType)
+        SettingsLock.shared.setUpIfNeeded(from: router.navigationController as? UIViewController)
 
         if let savedRoute {
             browserCoordinator.findAndHandle(route: savedRoute)

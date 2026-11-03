@@ -10,6 +10,7 @@ import Shared
 import Storage
 import MobileCoreServices
 import Common
+import MirlumiKit
 import Redux
 import WebEngine
 import WidgetKit
@@ -4648,6 +4649,12 @@ extension BrowserViewController: SearchViewControllerDelegate {
     }
 
     func presentSearchSettingsController() {
+        SettingsLock.shared.requestAccess(from: self) { [weak self] in
+            self?.presentSearchSettings()
+        }
+    }
+
+    private func presentSearchSettings() -> UIViewController? {
         let searchSettingsTableViewController = SearchSettingsTableViewController(
             profile: profile,
             searchEnginesManager: searchEnginesManager,
@@ -4656,6 +4663,7 @@ extension BrowserViewController: SearchViewControllerDelegate {
         )
         let navController = ModalSettingsNavigationController(rootViewController: searchSettingsTableViewController)
         self.present(navController, animated: true, completion: nil)
+        return navController
     }
 
     func updateForDefaultSearchEngineDidChange() {

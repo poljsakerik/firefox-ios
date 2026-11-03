@@ -97,6 +97,7 @@
 		0B62EFD21AD63CD100ACB9CD /* Clearables.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B62EFD11AD63CD100ACB9CD /* Clearables.swift */; };
 		0B6AB0412DCA3CB900F03AF6 /* DocumentLoggerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B6AB0402DCA3CB900F03AF6 /* DocumentLoggerTests.swift */; };
 		0B6D1C882E15456F00919F1E /* SummarizeKit in Frameworks */ = {isa = PBXBuildFile; productRef = 0B6D1C872E15456F00919F1E /* SummarizeKit */; };
+		4D1E0C01000000000000A001 /* MirlumiKit in Frameworks */ = {isa = PBXBuildFile; productRef = 4D1E0C01000000000000A002 /* MirlumiKit */; };
 		0B6FBAB21AC1F830007EC669 /* numberedPage.html in Resources */ = {isa = PBXBuildFile; fileRef = 0B6FBAB11AC1F830007EC669 /* numberedPage.html */; };
 		0B75AEA91AC20FB20015E5DC /* ImageIO.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0B8E0FF31A932BD500161DC3 /* ImageIO.framework */; };
 		0B78DC6E2E3C9CE800804872 /* SummarizerNimbusUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B78DC6D2E3C9CE800804872 /* SummarizerNimbusUtils.swift */; };
@@ -952,6 +953,7 @@
 		8A19ACB02A329078001C2147 /* AutofillCreditCardSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A19ACAF2A329078001C2147 /* AutofillCreditCardSettings.swift */; };
 		8A19ACB22A3290AE001C2147 /* ClearPrivateDataSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A19ACB12A3290AE001C2147 /* ClearPrivateDataSetting.swift */; };
 		8A19ACB42A3290D9001C2147 /* ContentBlockerSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A19ACB32A3290D9001C2147 /* ContentBlockerSetting.swift */; };
+		4D1E0C02000000000000B001 /* MirlumiSettingsPINSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D1E0C02000000000000B002 /* MirlumiSettingsPINSetting.swift */; };
 		8A19ACB62A3290F9001C2147 /* NotificationsSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A19ACB52A3290F9001C2147 /* NotificationsSetting.swift */; };
 		8A19ACB82A329128001C2147 /* PrivacyPolicySetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A19ACB72A329128001C2147 /* PrivacyPolicySetting.swift */; };
 		8A1A66072CDD168A00DD883C /* MockTopSiteHistoryManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A1A66062CDD168A00DD883C /* MockTopSiteHistoryManager.swift */; };
@@ -10154,6 +10156,7 @@
 		8A19ACAF2A329078001C2147 /* AutofillCreditCardSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutofillCreditCardSettings.swift; sourceTree = "<group>"; };
 		8A19ACB12A3290AE001C2147 /* ClearPrivateDataSetting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClearPrivateDataSetting.swift; sourceTree = "<group>"; };
 		8A19ACB32A3290D9001C2147 /* ContentBlockerSetting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentBlockerSetting.swift; sourceTree = "<group>"; };
+		4D1E0C02000000000000B002 /* MirlumiSettingsPINSetting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MirlumiSettingsPINSetting.swift; sourceTree = "<group>"; };
 		8A19ACB52A3290F9001C2147 /* NotificationsSetting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationsSetting.swift; sourceTree = "<group>"; };
 		8A19ACB72A329128001C2147 /* PrivacyPolicySetting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivacyPolicySetting.swift; sourceTree = "<group>"; };
 		8A1A66062CDD168A00DD883C /* MockTopSiteHistoryManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockTopSiteHistoryManager.swift; sourceTree = "<group>"; };
@@ -11762,6 +11765,7 @@
 		D4C35390283500A600F7DC7D /* PerformanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerformanceTests.swift; sourceTree = "<group>"; };
 		D4C4BDCD2253725E00986F04 /* LibraryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryTests.swift; sourceTree = "<group>"; };
 		D4F0C2642B2C90FB008ECEE8 /* BrowserKit */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = BrowserKit; path = ../BrowserKit; sourceTree = "<group>"; };
+		4D1E0C01000000000000A003 /* MirlumiKit */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = MirlumiKit; path = ../MirlumiKit; sourceTree = "<group>"; };
 		D4F389132981634F0082E974 /* Fake.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Fake.swift; sourceTree = "<group>"; };
 		D50268E825D1AE2D00026CDA /* el */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = el; path = el.lproj/Localizable.strings; sourceTree = "<group>"; };
 		D50268E925D1AE2D00026CDA /* el */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = el; path = el.lproj/BookmarkPanel.strings; sourceTree = "<group>"; };
@@ -12808,6 +12812,7 @@
 			files = (
 				AA93D2D82F71B445002E5E88 /* LLMKit in Frameworks */,
 				5A70EF0E295DFCCF00790249 /* Common in Frameworks */,
+				4D1E0C01000000000000A001 /* MirlumiKit in Frameworks */,
 				8A08EC6427EBDCAD00E119C7 /* AdServices.framework in Frameworks */,
 				0BF802E22CFF0937005633E5 /* Shared in Frameworks */,
 				8A08EC6227EBDCA400E119C7 /* iAd.framework in Frameworks */,
@@ -14687,6 +14692,7 @@
 				1D6ECD2E2EC2CDB90017EC7A /* AutofillRelayMaskSetting.swift */,
 				8A19ACB12A3290AE001C2147 /* ClearPrivateDataSetting.swift */,
 				8A19ACB32A3290D9001C2147 /* ContentBlockerSetting.swift */,
+				4D1E0C02000000000000B002 /* MirlumiSettingsPINSetting.swift */,
 				8A19ACAD2A329058001C2147 /* PasswordManagerSetting.swift */,
 				8A19ACB52A3290F9001C2147 /* NotificationsSetting.swift */,
 				8A19ACB72A329128001C2147 /* PrivacyPolicySetting.swift */,
@@ -17921,6 +17927,7 @@
 			isa = PBXGroup;
 			children = (
 				D4F0C2642B2C90FB008ECEE8 /* BrowserKit */,
+				4D1E0C01000000000000A003 /* MirlumiKit */,
 				1BFB58D82E4D1CB700643A49 /* MozillaRustComponents */,
 				C2F335362ECE339F0071588A /* TranslationsEngine.html */,
 				43BE578B278BA4D900491291 /* RustMozillaAppServices-Info.plist */,
@@ -18826,6 +18833,7 @@
 				AA93B7142F6D95D6002E5E88 /* LLMKit */,
 				EDD592492FC1090C0015EF9E /* ModifiedCopy */,
 				9405F1D23013762800BF6B10 /* AppAttestKit */,
+				4D1E0C01000000000000A002 /* MirlumiKit */,
 			);
 			productName = Client;
 			productReference = F84B21BE1A090F8100AAB793 /* Client.app */;
@@ -21255,6 +21263,7 @@
 				C2886E042EC5DFF7007AE6C3 /* TranslatorRoute.swift in Sources */,
 				C29B64EE2AD937D500F3244B /* QRCodeNavigationHandler.swift in Sources */,
 				8A19ACB42A3290D9001C2147 /* ContentBlockerSetting.swift in Sources */,
+				4D1E0C02000000000000B001 /* MirlumiSettingsPINSetting.swift in Sources */,
 				219935E72B05447C00E5966F /* TabDisplayModel.swift in Sources */,
 				2191D4472DC3BC1200E1A839 /* ZoomTelemetry.swift in Sources */,
 				0A76936B2C82018700103A6D /* TrackingProtectionBlockedTrackersView.swift in Sources */,
@@ -34025,6 +34034,10 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		4D1E0C01000000000000A002 /* MirlumiKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = MirlumiKit;
+		};
 		0B6D1C872E15456F00919F1E /* SummarizeKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = SummarizeKit;

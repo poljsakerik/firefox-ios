@@ -3,6 +3,7 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/
 
 import Common
+import MirlumiKit
 import Foundation
 import Glean
 import PhotosUI
@@ -535,6 +536,13 @@ final class BrowserCoordinator: BaseCoordinator,
         guard !childCoordinators.contains(where: { $0 is SettingsCoordinator }) else {
             return // route is handled with existing child coordinator
         }
+        SettingsLock.shared.requestAccess(from: router.navigationController as? UIViewController) { [weak self] in
+            self?.presentSettings(with: section, onDismiss: onDismiss)
+        }
+    }
+
+    private func presentSettings(with section: Route.SettingsSection, onDismiss: (() -> Void)?) -> UIViewController? {
+        guard !childCoordinators.contains(where: { $0 is SettingsCoordinator }) else { return nil }
         windowManager.postWindowEvent(event: .settingsOpened, windowUUID: windowUUID)
         let navigationController = SettingsNavigationController(windowUUID: windowUUID)
         let isPad = browserViewController.traitCollection.userInterfaceIdiom == .pad
@@ -558,6 +566,7 @@ final class BrowserCoordinator: BaseCoordinator,
             onDismiss?()
         }
         present(navigationController)
+        return navigationController
     }
 
     private func showLibrary(with homepanelSection: Route.HomepanelSection) {
@@ -582,12 +591,19 @@ final class BrowserCoordinator: BaseCoordinator,
     }
 
     private func showETPMenu(sourceView: UIView) {
+        SettingsLock.shared.requestAccess(from: router.navigationController as? UIViewController) { [weak self] in
+            self?.presentETPMenu(sourceView: sourceView)
+        }
+    }
+
+    private func presentETPMenu(sourceView: UIView) -> UIViewController? {
         let enhancedTrackingProtectionCoordinator = EnhancedTrackingProtectionCoordinator(router: router,
                                                                                           tabManager: tabManager,
                                                                                           secureConnectionDelegate: self)
         enhancedTrackingProtectionCoordinator.parentCoordinator = self
         add(child: enhancedTrackingProtectionCoordinator)
         enhancedTrackingProtectionCoordinator.start(sourceView: sourceView)
+        return router.navigationController.presentedViewController
     }
 
     // MARK: - SettingsCoordinatorDelegate
@@ -735,6 +751,12 @@ final class BrowserCoordinator: BaseCoordinator,
     }
 
     func presentAdBlockerSettings() {
+        SettingsLock.shared.requestAccess(from: router.navigationController as? UIViewController) { [weak self] in
+            self?.presentAdBlockerSettingsSheet()
+        }
+    }
+
+    private func presentAdBlockerSettingsSheet() -> UIViewController? {
         let browsingSettings = BrowsingSettingsViewController(profile: profile,
                                                               windowUUID: windowUUID,
                                                               shouldUsePrivateOverride: false)
@@ -743,6 +765,7 @@ final class BrowserCoordinator: BaseCoordinator,
         setupAdBlockerSettingsDetents(for: navigationController)
         navigationController.sheetPresentationController?.prefersGrabberVisible = true
         router.present(navigationController, animated: true)
+        return navigationController
     }
 
     private func setupAdBlockerSettingsDetents(for controller: UIViewController) {

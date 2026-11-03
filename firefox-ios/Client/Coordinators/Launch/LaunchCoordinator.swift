@@ -3,6 +3,7 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/
 
 import Common
+import MirlumiKit
 import Foundation
 import Shared
 import OnboardingKit
@@ -230,7 +231,10 @@ final class LaunchCoordinator: BaseCoordinator,
                 profile.prefs.removeObjectForKey(PrefsKeys.OnboardingLastCardSeen)
                 SearchBarLocationSaver().saveUserSearchBarLocation(profile: profile)
                 self.onboardingService = nil
-                parentCoordinator?.didFinishLaunch(from: self)
+                SettingsLock.shared.setUpIfNeeded(from: router.navigationController as? UIViewController) { [weak self] in
+                    guard let self else { return }
+                    parentCoordinator?.didFinishLaunch(from: self)
+                }
             }
         )
 

@@ -7,6 +7,7 @@ import CoreSpotlight
 import UIKit
 import Common
 import Glean
+import MirlumiKit
 import TabDataStore
 import TipKit
 
@@ -127,6 +128,7 @@ class AppDelegate: UIResponder,
 
         // Fix iOS simulator builds for Fennec after running unit tests locally [FXIOS-10712]
         fixSimulatorDevBuild(application)
+        SettingsLock.shared.isEnabled = MirlumiBuild.settingsLockEnabled
 
         pushNotificationSetup()
         appLaunchUtil?.setUpPostLaunchDependencies()

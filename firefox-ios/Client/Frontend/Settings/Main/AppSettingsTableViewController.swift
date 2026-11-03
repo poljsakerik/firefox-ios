@@ -3,6 +3,7 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/
 
 import Common
+import MirlumiKit
 import UIKit
 import Shared
 import Glean
@@ -427,6 +428,10 @@ class AppSettingsTableViewController: SettingsTableViewController,
 
     private func getPrivacySettings() -> [SettingSection] {
         var privacySettings = [Setting]()
+
+        if SettingsLock.shared.isEnabled {
+            privacySettings.append(MirlumiSettingsPINSetting())
+        }
 
         privacySettings.append(AutofillPasswordSetting(settings: self, settingsDelegate: parentCoordinator))
 

@@ -14,4 +14,8 @@ public enum MirlumiBuild {
     public static let showsSponsoredContent = false
     public static let showsMarketingMessages = false
     public static let showsDebugMenu = false
+
+    /// Mirlumi's own features, from MirlumiKit.
+    /// The settings lock keeps Settings, and everything else that changes the browser, behind a parent's PIN.
+    public static let settingsLockEnabled = true
 }
