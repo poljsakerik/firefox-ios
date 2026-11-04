@@ -20,4 +20,6 @@ public enum MirlumiBuild {
     public static let settingsLockEnabled = true
     /// DuckDuckGo searches always load from its strict safe search host, safe.duckduckgo.com.
     public static let safeSearchEnabled = true
+    /// Only sites on the list for children, and sites a parent allowed with the PIN, open.
+    public static let allowlistEnabled = true
 }

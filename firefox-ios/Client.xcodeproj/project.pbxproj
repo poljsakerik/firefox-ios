@@ -953,6 +953,7 @@
 		8A19ACB02A329078001C2147 /* AutofillCreditCardSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A19ACAF2A329078001C2147 /* AutofillCreditCardSettings.swift */; };
 		8A19ACB22A3290AE001C2147 /* ClearPrivateDataSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A19ACB12A3290AE001C2147 /* ClearPrivateDataSetting.swift */; };
 		8A19ACB42A3290D9001C2147 /* ContentBlockerSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A19ACB32A3290D9001C2147 /* ContentBlockerSetting.swift */; };
+		4D1E0C05000000000000C001 /* MirlumiAllowedSitesSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D1E0C05000000000000C002 /* MirlumiAllowedSitesSetting.swift */; };
 		4D1E0C02000000000000B001 /* MirlumiSettingsPINSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D1E0C02000000000000B002 /* MirlumiSettingsPINSetting.swift */; };
 		8A19ACB62A3290F9001C2147 /* NotificationsSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A19ACB52A3290F9001C2147 /* NotificationsSetting.swift */; };
 		8A19ACB82A329128001C2147 /* PrivacyPolicySetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A19ACB72A329128001C2147 /* PrivacyPolicySetting.swift */; };
@@ -10156,6 +10157,7 @@
 		8A19ACAF2A329078001C2147 /* AutofillCreditCardSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutofillCreditCardSettings.swift; sourceTree = "<group>"; };
 		8A19ACB12A3290AE001C2147 /* ClearPrivateDataSetting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClearPrivateDataSetting.swift; sourceTree = "<group>"; };
 		8A19ACB32A3290D9001C2147 /* ContentBlockerSetting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentBlockerSetting.swift; sourceTree = "<group>"; };
+		4D1E0C05000000000000C002 /* MirlumiAllowedSitesSetting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MirlumiAllowedSitesSetting.swift; sourceTree = "<group>"; };
 		4D1E0C02000000000000B002 /* MirlumiSettingsPINSetting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MirlumiSettingsPINSetting.swift; sourceTree = "<group>"; };
 		8A19ACB52A3290F9001C2147 /* NotificationsSetting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationsSetting.swift; sourceTree = "<group>"; };
 		8A19ACB72A329128001C2147 /* PrivacyPolicySetting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivacyPolicySetting.swift; sourceTree = "<group>"; };
@@ -14692,6 +14694,7 @@
 				1D6ECD2E2EC2CDB90017EC7A /* AutofillRelayMaskSetting.swift */,
 				8A19ACB12A3290AE001C2147 /* ClearPrivateDataSetting.swift */,
 				8A19ACB32A3290D9001C2147 /* ContentBlockerSetting.swift */,
+				4D1E0C05000000000000C002 /* MirlumiAllowedSitesSetting.swift */,
 				4D1E0C02000000000000B002 /* MirlumiSettingsPINSetting.swift */,
 				8A19ACAD2A329058001C2147 /* PasswordManagerSetting.swift */,
 				8A19ACB52A3290F9001C2147 /* NotificationsSetting.swift */,
@@ -21263,6 +21266,7 @@
 				C2886E042EC5DFF7007AE6C3 /* TranslatorRoute.swift in Sources */,
 				C29B64EE2AD937D500F3244B /* QRCodeNavigationHandler.swift in Sources */,
 				8A19ACB42A3290D9001C2147 /* ContentBlockerSetting.swift in Sources */,
+				4D1E0C05000000000000C001 /* MirlumiAllowedSitesSetting.swift in Sources */,
 				4D1E0C02000000000000B001 /* MirlumiSettingsPINSetting.swift in Sources */,
 				219935E72B05447C00E5966F /* TabDisplayModel.swift in Sources */,
 				2191D4472DC3BC1200E1A839 /* ZoomTelemetry.swift in Sources */,

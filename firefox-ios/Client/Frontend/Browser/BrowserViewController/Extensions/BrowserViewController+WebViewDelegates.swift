@@ -4,6 +4,7 @@
 
 import Foundation
 import Common
+import MirlumiKit
 @preconcurrency import WebKit
 import Shared
 import UIKit
@@ -289,7 +290,9 @@ extension BrowserViewController: WKUIDelegate {
 
     private func contextMenuPreviewProvider(for url: URL, webView: WKWebView) -> UIContextMenuContentPreviewProvider? {
         let provider: UIContextMenuContentPreviewProvider = {
-            guard self.profile.prefs.boolForKey(PrefsKeys.ContextMenuShowLinkPreviews) ?? true else { return nil }
+            guard Allowlist.shared.allowsLinkPreviews,
+                  self.profile.prefs.boolForKey(PrefsKeys.ContextMenuShowLinkPreviews) ?? true
+            else { return nil }
 
             let previewViewController = ContextMenuPreviewViewController()
             previewViewController.view.isUserInteractionEnabled = false
@@ -580,6 +583,10 @@ extension BrowserViewController: WKNavigationDelegate {
            navigationAction.navigationType == .linkActivated,
            !tab.adsTelemetryUrlList.isEmpty {
             handleAdsTelemetryForNavigation(url: url, tab: tab)
+        }
+
+        if Allowlist.shared.handle(navigationAction, in: webView, presenter: self, decisionHandler: decisionHandler) {
+            return
         }
 
         if InternalURL.isValid(url: url) {

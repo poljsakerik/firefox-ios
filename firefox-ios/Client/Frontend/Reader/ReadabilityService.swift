@@ -97,7 +97,7 @@ extension ReadabilityOperation: WKNavigationDelegate {
         decisionHandler: @escaping @MainActor @Sendable (WKNavigationActionPolicy) -> Void
     ) {
         if !SafeSearch.shared.redirect(navigationAction, in: webView, decisionHandler: decisionHandler) {
-            decisionHandler(.allow)
+            decisionHandler(Allowlist.shared.policy(forBackgroundLoad: navigationAction))
         }
     }
 

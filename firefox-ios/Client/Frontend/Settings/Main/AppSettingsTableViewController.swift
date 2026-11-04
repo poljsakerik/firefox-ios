@@ -432,6 +432,9 @@ class AppSettingsTableViewController: SettingsTableViewController,
         if SettingsLock.shared.isEnabled {
             privacySettings.append(MirlumiSettingsPINSetting())
         }
+        if Allowlist.shared.isEnabled {
+            privacySettings.append(MirlumiAllowedSitesSetting())
+        }
 
         privacySettings.append(AutofillPasswordSetting(settings: self, settingsDelegate: parentCoordinator))
 

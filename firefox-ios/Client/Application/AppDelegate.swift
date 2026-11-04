@@ -130,6 +130,7 @@ class AppDelegate: UIResponder,
         fixSimulatorDevBuild(application)
         SettingsLock.shared.isEnabled = MirlumiBuild.settingsLockEnabled
         SafeSearch.shared.isEnabled = MirlumiBuild.safeSearchEnabled
+        Allowlist.shared.isEnabled = MirlumiBuild.allowlistEnabled
 
         pushNotificationSetup()
         appLaunchUtil?.setUpPostLaunchDependencies()
