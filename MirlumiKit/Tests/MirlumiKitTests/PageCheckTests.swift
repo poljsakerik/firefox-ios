@@ -401,6 +401,57 @@ final class PageCheckTests: XCTestCase {
         XCTAssertEqual(outcome, .block(address, reason: "unchecked"))
     }
 
+    func testFlaggingASiteBlocksItsOtherOpenPagesAndTheirPendingChecks() async throws {
+        let allowlist = openAllowlist()
+        let check = PageCheck(allowlist: allowlist, classifier: FakeClassifier(.clear, after: 0.2))
+        let other = url("https://casino.example/live")
+        let reader = url("readermode://app/page?url=https%3A%2F%2Fwww.casino.example%2Fstory")
+        let unrelated = url("https://example.com/")
+        let (pageB, documentB) = try checkedPage(other.absoluteString, in: check, allowlist: allowlist)
+        let pageC = Page()
+        _ = allowlist.decide(reader, in: pageC, isMainFrame: true, isLoad: false, source: nil)
+        let (pageD, _) = try checkedPage(unrelated.absoluteString, in: check, allowlist: allowlist)
+        var shown: [(AnyObject, URL, String)] = []
+        check.openPages = { [(pageB, other), (pageC, reader), (pageD, unrelated)] }
+        check.showBlocked = { shown.append(($0, $1, $2)) }
+
+        // B's check is under way, and would come back clear.
+        let pendingB = Task { await check.check(self.recipe, at: other, in: pageB, document: documentB, revision: 1) }
+        try await Task.sleep(nanoseconds: 50_000_000)
+
+        let flagging = PageCheck(allowlist: allowlist, classifier: FakeClassifier(.flagged("gambling")))
+        flagging.openPages = check.openPages
+        flagging.showBlocked = check.showBlocked
+        let (pageA, documentA) = try checkedPage("https://www.casino.example/slots", in: flagging,
+                                                 allowlist: allowlist)
+        let flagged = await flagging.check(casino, at: url("https://www.casino.example/slots"), in: pageA,
+                                           document: documentA, revision: 1)
+        XCTAssertEqual(flagged, .block(url("https://www.casino.example/slots"), reason: "gambling"))
+
+        // B, and the reader view of an article on the site, are blocked now; the unrelated page isn't.
+        XCTAssertEqual(shown.count, 2)
+        XCTAssertTrue(shown.contains { $0.0 === pageB && $0.1 == other && $0.2 == "gambling" })
+        XCTAssertTrue(shown.contains { $0.0 === pageC && $0.1 == url("https://www.casino.example/story") })
+        XCTAssertFalse(shown.contains { $0.0 === pageD })
+        let outcomeB = await pendingB.value
+        XCTAssertNotEqual(outcomeB, .clear)
+    }
+
+    func testAClearVerdictForAFlaggedSiteBlocks() {
+        let allowlist = openAllowlist()
+        _ = allowlist.blockCheckedPage(url("https://casino.example/"), in: Page(), verdict: .flagged("gambling"))
+        let page = Page()
+        XCTAssertEqual(allowlist.blockCheckedPage(url("https://casino.example/about"), in: page, verdict: .clear),
+                       .block(url("https://casino.example/about"), reason: "gambling"))
+        XCTAssertNil(allowlist.blockCheckedPage(url("https://example.com/"), in: Page(), verdict: .clear))
+        // Once the blocked page shows there, it stays, and an allowed site isn't blocked.
+        _ = allowlist.decide(url("https://casino.example/about"), in: page, isMainFrame: true, isLoad: true,
+                             source: nil)
+        XCTAssertNil(allowlist.blockIfFlagged(url("https://casino.example/about"), in: page))
+        allowlist.allow(url("https://casino.example/"))
+        XCTAssertNil(allowlist.blockIfFlagged(url("https://casino.example/"), in: Page()))
+    }
+
     func testTurningOpenModeOffRevalidatesPagesAndDropsPendingAnswers() async throws {
         let allowlist = openAllowlist()
         let classifier = GatedClassifier()

@@ -50,6 +50,10 @@ public final class PageCheck: NSObject {
     /// The document each page shows, from its script's start.
     private let documents = NSMapTable<AnyObject, Document>.weakToStrongObjects()
     private var lastDocument = 0
+    /// The pages open now and the address each shows: every web view the check is installed in. Tests replace it.
+    var openPages: () -> [(page: AnyObject, url: URL)]
+    /// Replaces `page` with the blocked page. Tests replace it.
+    var showBlocked: (AnyObject, URL, String) -> Void
 
     init(allowlist: Allowlist, classifier: PageClassifying) {
         self.allowlist = allowlist
@@ -60,6 +64,13 @@ public final class PageCheck: NSObject {
                                   injectionTime: .atDocumentStart,
                                   forMainFrameOnly: true,
                                   in: Self.world)
+        let webViews = webViews
+        openPages = { webViews.allObjects.compactMap { webView in webView.url.map { (webView, $0) } } }
+        showBlocked = { page, url, reason in
+            guard let webView = page as? WKWebView else { return }
+            webView.stopLoading()
+            allowlist.showBlockedPage(at: url, reason: reason, in: webView)
+        }
         super.init()
         NotificationCenter.default.addObserver(
             forName: Allowlist.browsingModeDidChange, object: allowlist, queue: .main
@@ -108,7 +119,20 @@ public final class PageCheck: NSObject {
         else { return .clear }
         // The blocked page replaces the document, so nothing it still sends counts.
         documents.removeObject(forKey: page)
+        if case .flagged = verdict {
+            blockOtherPages(onSiteOf: page)
+        }
         return .block(blocked, reason: reason ?? Allowlist.uncheckedReason)
+    }
+
+    /// After a page was flagged: every other open page of its site is blocked now, and no answer still due for one of
+    /// them can show it.
+    private func blockOtherPages(onSiteOf flagged: AnyObject) {
+        for (page, url) in openPages() where page !== flagged {
+            guard case .block(let blocked, let reason)? = allowlist.blockIfFlagged(url, in: page) else { continue }
+            documents.removeObject(forKey: page)
+            showBlocked(page, blocked, reason ?? Allowlist.uncheckedReason)
+        }
     }
 
     private func modeChanged() {
@@ -157,15 +181,49 @@ public final class PageCheck: NSObject {
       if (!root) {
         return;
       }
+      // An isolated world keeps this script's variables from the page, not the DOM: the gate is an element in the
+      // page's own tree, which its scripts can remove, edit or override. While the page should be hidden, a guard puts
+      // it back the moment they do, before anything is painted.
+      const GATE = ":root:root:root:root{opacity:0 !important;pointer-events:none !important}";
       const style = document.createElement("style");
-      style.textContent = "html{opacity:0 !important}";
-      const hide = () => {
+      style.textContent = GATE;
+      let gated = false;
+      let stopped = false;
+      const restore = () => {
         const parent = document.documentElement || root;
+        if (style.disabled) {
+          style.disabled = false;
+        }
+        if (style.textContent !== GATE) {
+          style.textContent = GATE;
+        }
         if (style.parentNode !== parent) {
           parent.appendChild(style);
         }
+        const inline = parent.style;
+        if (inline) {
+          for (const property of ["opacity", "visibility", "display"]) {
+            if (inline.getPropertyValue(property)) {
+              inline.removeProperty(property);
+            }
+          }
+        }
       };
-      const show = () => style.remove();
+      const hide = () => {
+        gated = true;
+        restore();
+      };
+      const show = () => {
+        gated = false;
+        style.remove();
+      };
+      const guard = new MutationObserver(() => {
+        if (gated && !stopped) {
+          restore();
+        }
+      });
+      guard.observe(root, { childList: true, attributes: true, attributeFilter: ["style"] });
+      guard.observe(style, { childList: true, characterData: true, subtree: true, attributes: true });
       hide();
       const handler = window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.\(handlerName);
       // Without the handler nothing can clear the page, so it stays hidden.
@@ -176,7 +234,6 @@ public final class PageCheck: NSObject {
       const HIDE_AFTER_CHARS = 200;
       const SETTLE_MS = 300;
       const ATTRIBUTE_READ_MS = 100;
-      let stopped = false;
       let documentId = 0;
       let revision = 0;
       let cleared = false;
@@ -192,6 +249,7 @@ public final class PageCheck: NSObject {
 
       globalThis.mirlumiPageCheckStop = () => {
         stopped = true;
+        guard.disconnect();
         if (observer) {
           observer.disconnect();
         }
@@ -313,15 +371,23 @@ public final class PageCheck: NSObject {
             return;
           }
           added += text.textAdded(theirs);
+          const attributes = theirs.filter((record) => record.type === "attributes");
+          // An attribute change on elements holding real text is read at once, before paint, and hides the page only
+          // if its text changed, so a class change on <html> or <body> doesn't blink. Small animated elements are read
+          // on the throttle.
           if (added >= HIDE_AFTER_CHARS || !sent || location.href !== sent.address) {
             changed(true);
-          } else if (theirs.some((record) => record.type === "attributes")) {
+          } else if (attributes.length > 0 && text.attributeText(attributes) >= HIDE_AFTER_CHARS) {
+            clearTimeout(attributeTimer);
+            attributeCheck();
+          } else if (attributes.length > 0) {
             attributeChanged();
           } else {
             changed(false);
           }
         });
-        observer.observe(document.documentElement, { subtree: true, childList: true, characterData: true, attributes: true });
+        observer.observe(document.documentElement,
+          { subtree: true, childList: true, characterData: true, attributes: true });
         addEventListener("popstate", () => changed(true));
         addEventListener("hashchange", () => changed(true));
       };

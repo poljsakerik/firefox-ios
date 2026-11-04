@@ -98,5 +98,20 @@ var MirlumiPageText = (function () {
     return length;
   }
 
-  return { MAX_BODY_CHARS, readPage, CHUNK_CHARS, CHANGED_CHUNKS, MIN_LENGTH_CHANGE, pageState, changedEnough, textAdded };
+  // How much text sits inside the elements whose attributes changed. An attribute change on an element holding real text,
+  // such as a hidden passage being shown, is checked at once; changes on elements with little text, such as an animated
+  // icon or slide, can wait for a throttled look.
+  function attributeText(records) {
+    const targets = [];
+    let length = 0;
+    for (const record of records) {
+      if (record.type === "attributes" && record.target && targets.indexOf(record.target) < 0) {
+        targets.push(record.target);
+        length += (record.target.textContent || "").length;
+      }
+    }
+    return length;
+  }
+
+  return { MAX_BODY_CHARS, readPage, CHUNK_CHARS, CHANGED_CHUNKS, MIN_LENGTH_CHANGE, pageState, changedEnough, textAdded, attributeText };
 })();

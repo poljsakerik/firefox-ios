@@ -312,23 +312,40 @@ public final class Allowlist {
 
     /// Blocks the page at `url` in `page` after its check: `verdict` flagged it, or the check failed. A reader view
     /// page is blocked at its article's address. A flagged site stays blocked in every page for the session, until a
-    /// parent allows it, which they can from the blocked page. Returns nil for a clear verdict.
+    /// parent allows it, which they can from the blocked page. Returns nil for a clear verdict, unless the site was
+    /// flagged meanwhile, in another page.
     func blockCheckedPage(_ url: URL, in page: AnyObject, verdict: PageVerdict) -> Decision? {
-        let target: URL
-        if case .some(.some(let article)) = Self.readerArticle(of: url) {
-            target = article
-        } else {
-            target = url
-        }
+        let target = Self.checkedAddress(of: url)
         switch verdict {
         case .clear:
-            return nil
+            guard !allows(target), let label = flaggedLabel(of: target) else { return nil }
+            return block(target, in: page, reason: label)
         case .flagged(let label):
             flag(target, label: label)
             return block(target, in: page, reason: label)
         case .failed:
             return block(target, in: page, reason: Self.uncheckedReason)
         }
+    }
+
+    /// After a site was flagged in another page: blocks the document at `url` in `page` if it belongs to a flagged site,
+    /// as `decide` would now. A reader view page counts by its article. The blocked page and allowed sites stay.
+    func blockIfFlagged(_ url: URL, in page: AnyObject) -> Decision? {
+        guard checksPages else { return nil }
+        if let mark = pageMarks.object(forKey: page), mark.isBlockedPage, Self.isSameDocument(mark.url, url) {
+            return nil
+        }
+        let target = Self.checkedAddress(of: url)
+        guard let scheme = target.scheme?.lowercased(), scheme == "http" || scheme == "https",
+              !allows(target), let label = flaggedLabel(of: target)
+        else { return nil }
+        return block(target, in: page, reason: label)
+    }
+
+    /// The address a page check judges: a reader view page's article, or the address itself.
+    private static func checkedAddress(of url: URL) -> URL {
+        if case .some(.some(let article)) = readerArticle(of: url) { return article }
+        return url
     }
 
     /// Decides again what the document at `url` in `page` may show, after the mode changed. The blocked page stays.
