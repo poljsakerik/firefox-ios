@@ -272,9 +272,13 @@ public final class PageCheck: NSObject {
         clearTimeout(parsingTimer);
         send(read());
         observer = new MutationObserver((records) => {
-          const theirs = records.filter((record) => record.target !== style &&
-            !Array.prototype.includes.call(record.addedNodes, style) &&
-            !Array.prototype.includes.call(record.removedNodes, style));
+          const theirs = records.filter((record) => {
+            if (record.target === style) {
+              return false;
+            }
+            const nodes = [...record.addedNodes, ...record.removedNodes];
+            return nodes.length === 0 || !nodes.every((node) => node === style);
+          });
           if (theirs.length === 0) {
             return;
           }
