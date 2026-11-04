@@ -25,6 +25,10 @@ final class MirlumiBuildTests: XCTestCase {
         XCTAssertTrue(MirlumiBuild.settingsLockEnabled)
     }
 
+    func testDuckDuckGoSearchesUseStrictSafeSearch() {
+        XCTAssertTrue(MirlumiBuild.safeSearchEnabled)
+    }
+
     func testIdentity() throws {
         let info = try XCTUnwrap(Bundle.main.infoDictionary)
         XCTAssertEqual(Bundle.main.bundleIdentifier, "app.mirlumi.browser.dev")

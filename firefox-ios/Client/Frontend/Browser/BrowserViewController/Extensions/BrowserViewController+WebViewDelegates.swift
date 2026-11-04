@@ -10,6 +10,7 @@ import UIKit
 import Photos
 import SafariServices
 import WebEngine
+import MirlumiKit
 
 // MARK: - WKUIDelegate
 extension BrowserViewController: WKUIDelegate {
@@ -300,6 +301,7 @@ extension BrowserViewController: WKUIDelegate {
             configuration.mediaTypesRequiringUserActionForPlayback = .all
             configuration.allowsAirPlayForMediaPlayback = false
             let clonedWebView = WKWebView(frame: webView.frame, configuration: configuration)
+            SafeSearch.shared.guardNavigation(of: clonedWebView)
 
             previewViewController.view.addSubview(clonedWebView)
             clonedWebView.pinToSuperview()
@@ -567,6 +569,10 @@ extension BrowserViewController: WKNavigationDelegate {
               let tab = tabManager[webView]
         else {
             decisionHandler(.cancel)
+            return
+        }
+
+        if SafeSearch.shared.redirect(navigationAction, in: webView, decisionHandler: decisionHandler) {
             return
         }
 

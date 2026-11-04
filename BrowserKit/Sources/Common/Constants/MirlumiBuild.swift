@@ -18,4 +18,6 @@ public enum MirlumiBuild {
     /// Mirlumi's own features, from MirlumiKit.
     /// The settings lock keeps Settings, and everything else that changes the browser, behind a parent's PIN.
     public static let settingsLockEnabled = true
+    /// DuckDuckGo searches always load from its strict safe search host, safe.duckduckgo.com.
+    public static let safeSearchEnabled = true
 }

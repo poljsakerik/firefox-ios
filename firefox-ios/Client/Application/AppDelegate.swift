@@ -129,6 +129,7 @@ class AppDelegate: UIResponder,
         // Fix iOS simulator builds for Fennec after running unit tests locally [FXIOS-10712]
         fixSimulatorDevBuild(application)
         SettingsLock.shared.isEnabled = MirlumiBuild.settingsLockEnabled
+        SafeSearch.shared.isEnabled = MirlumiBuild.safeSearchEnabled
 
         pushNotificationSetup()
         appLaunchUtil?.setUpPostLaunchDependencies()

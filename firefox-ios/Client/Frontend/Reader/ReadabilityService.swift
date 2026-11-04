@@ -7,6 +7,7 @@ import Shared
 import Common
 import WebKit
 import WebEngine
+import MirlumiKit
 
 class ReadabilityOperation: Operation, @unchecked Sendable {
     let profile: Profile
@@ -90,6 +91,16 @@ class ReadabilityOperation: Operation, @unchecked Sendable {
 }
 
 extension ReadabilityOperation: WKNavigationDelegate {
+    func webView(
+        _ webView: WKWebView,
+        decidePolicyFor navigationAction: WKNavigationAction,
+        decisionHandler: @escaping @MainActor @Sendable (WKNavigationActionPolicy) -> Void
+    ) {
+        if !SafeSearch.shared.redirect(navigationAction, in: webView, decisionHandler: decisionHandler) {
+            decisionHandler(.allow)
+        }
+    }
+
     func webView(
         _ webView: WKWebView,
         didFail navigation: WKNavigation?,
