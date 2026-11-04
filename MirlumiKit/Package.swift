@@ -12,18 +12,27 @@ let package = Package(
     defaultLocalization: "en",
     platforms: [
         .iOS(.v15),
-        .macOS(.v12)
+        .macOS(.v14)
     ],
     products: [
         .library(name: "MirlumiKit", targets: ["MirlumiKit"])
     ],
+    dependencies: [
+        // Runs the image check's model.
+        .package(url: "https://github.com/microsoft/onnxruntime-swift-package-manager", exact: "1.24.2")
+    ],
     targets: [
         .target(
             name: "MirlumiKit",
+            dependencies: [
+                .product(name: "onnxruntime", package: "onnxruntime-swift-package-manager")
+            ],
             resources: [
                 .process("Resources"),
-                // packages/content-rules/generate.mjs in the mirlumi repository writes these. Don't edit them here.
-                .copy("ContentRules/Generated")
+                // packages/content-rules/generate.mjs and packages/image-check/generate.mjs in the mirlumi repository
+                // write these. Don't edit them here.
+                .copy("ContentRules/Generated"),
+                .copy("ImageCheck/ImageCheckGenerated")
             ]
         ),
         .testTarget(

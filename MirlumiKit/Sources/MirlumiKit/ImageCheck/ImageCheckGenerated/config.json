@@ -1,0 +1,14 @@
+{
+  "labels": [
+    "NSFW",
+    "SFW"
+  ],
+  "unsafe": {
+    "NSFW": 0.7
+  },
+  "minSide": 48,
+  "maxInFlight": 4,
+  "timeoutMs": 20000,
+  "maxBytes": 15728640,
+  "maxFrames": 16
+}

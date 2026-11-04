@@ -1,0 +1,21 @@
+{
+  "name": "Marqo/nsfw-image-detection-384",
+  "source": "https://huggingface.co/Marqo/nsfw-image-detection-384",
+  "revision": "0c26ec22111b83f106d72a55f611ec35962bcb65",
+  "license": "apache-2.0",
+  "file": "image-check.onnx",
+  "sha256": "7a8fe4734642a3aa59a41aa4a4fea68e7e1d9eb4734302364718a44693d79d01",
+  "bytes": 6243838,
+  "quantized": true,
+  "input": {
+    "width": 384,
+    "height": 384
+  },
+  "labels": [
+    "NSFW",
+    "SFW"
+  ],
+  "unsafe": {
+    "NSFW": 0.7
+  }
+}

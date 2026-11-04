@@ -4,3 +4,5 @@
 
 .build/
 .swiftpm/
+# Resolved by the app project, whose Package.resolved pins every package.
+Package.resolved
