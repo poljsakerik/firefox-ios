@@ -6,6 +6,7 @@ import WebKit
 import Shared
 import Common
 import CryptoKit
+import MirlumiKit
 
 enum BlocklistCategory: CaseIterable {
     case advertising
@@ -235,6 +236,9 @@ class ContentBlocker: Notifiable {
         // Add back the block images rule (if needed) after having removed all rules.
         if let rule = blockImagesRule, tab.imageContentBlockingEnabled() {
             add(contentRuleList: rule, toTab: tab)
+        }
+        if MirlumiBuild.contentRulesEnabled, let webView = tab.currentWebView() {
+            ContentRules.shared.install(in: webView)
         }
     }
 

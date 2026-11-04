@@ -18779,6 +18779,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = F84B21DD1A090F8100AAB793 /* Build configuration list for PBXNativeTarget "Client" */;
 			buildPhases = (
+				4D1E0C01000000000000A004 /* Mirlumi content rules key check */,
 				C874A4E327F62C5B006F54E5 /* Swiftlint */,
 				D48146712E26CB3300231244 /* Populate test-fixtures script */,
 				EEB971C22FC0FCB200D6C232 /* Populate reader-mode script */,
@@ -19726,6 +19727,26 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "#!/bin/bash\nset -e\n\nif [ \"Firefox\" = \"${CONFIGURATION}\" ]; then\n  # Path to the app directory\n  APP_DIR_PATH=\"${BUILT_PRODUCTS_DIR}/${EXECUTABLE_FOLDER_PATH}\"\n  # Strip main binary\n  strip -rSTx \"${APP_DIR_PATH}/${EXECUTABLE_NAME}\"\n  # Path to the Frameworks directory\n  APP_FRAMEWORKS_DIR=\"${APP_DIR_PATH}/Frameworks\"\n\n  # Strip symbols from frameworks, if Frameworks/ exists at all\n  # ... as long as the framework is NOT signed by Apple\n  if [ -d \"${APP_FRAMEWORKS_DIR}\" ]\n  then\n    find \"${APP_FRAMEWORKS_DIR}\" -type f -perm +111 -maxdepth 2 -mindepth 2 -exec bash -c '\n    codesign -v -R=\"anchor apple\" \"{}\" &> /dev/null ||\n    (\n        echo \"Stripping {}\" &&\n        if [ -w \"{}\" ]; then\n            strip -rSTx \"{}\"\n        else\n            echo \"Warning: No write permission for {}\"\n        fi\n    )\n    ' \\;\n  fi\n\n  # Path to the PlugIns directory\n  APP_PLUGINS_DIR=\"${APP_DIR_PATH}/PlugIns\"\n\n  # Strip symbols from plugins, if PlugIns/ exists at all\n  # ... as long as the plugin is NOT signed by Apple\n  if [ -d \"${APP_PLUGINS_DIR}\" ]\n  then\n    find \"${APP_PLUGINS_DIR}\" -type f -perm +111 -maxdepth 2 -mindepth 2 -exec bash -c '\n    codesign -v -R=\"anchor apple\" \"{}\" &> /dev/null ||\n    (\n        echo \"Stripping {}\" &&\n        if [ -w \"{}\" ]; then\n            strip -rSTx \"{}\"\n        else\n            echo \"Warning: No write permission for {}\"\n        fi\n    )\n    ' \\;\n  fi\nfi\n";
+		};
+		4D1E0C01000000000000A004 /* Mirlumi content rules key check */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/../MirlumiKit/Sources/MirlumiKit/ContentRules/Generated/config.json",
+			);
+			name = "Mirlumi content rules key check";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Mirlumi: the debug private key is committed, and while the release key is its placeholder copy it signs rules\n# every build trusts. Only development builds may trust it: the Debug configuration, and never an archive, which\n# sets ACTION=install (the Fennec scheme archives with Debug). See packages/content-rules/README.md, \"Signing keys\", in the\n# mirlumi repository. Anything but an explicit false fails, so a missing file does too.\nconfig=\"${SRCROOT}/../MirlumiKit/Sources/MirlumiKit/ContentRules/Generated/config.json\"\nif { [ \"${CONFIGURATION}\" != \"Debug\" ] || [ \"${ACTION}\" = \"install\" ]; } && ! grep -q '\"placeholderKey\": false' \"${config}\"; then\n    echo \"error: Content rules still trust the placeholder signing key. Create the real key first: packages/content-rules/README.md, Signing keys.\"\n    exit 1\nfi\n";
 		};
 		C874A4E327F62C5B006F54E5 /* Swiftlint */ = {
 			isa = PBXShellScriptBuildPhase;

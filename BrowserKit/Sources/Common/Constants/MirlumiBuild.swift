@@ -22,4 +22,6 @@ public enum MirlumiBuild {
     public static let safeSearchEnabled = true
     /// Only sites on the list for children, and sites a parent allowed with the PIN, open.
     public static let allowlistEnabled = true
+    /// Content rules hide and block short-form video and app prompts on the sites they name.
+    public static let contentRulesEnabled = true
 }

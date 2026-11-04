@@ -2,6 +2,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/
 
+import Common
+import MirlumiKit
 import WebKit
 
 @MainActor
@@ -146,6 +148,9 @@ class UserScriptManager {
         }
         // Inject the Print Helper. This needs to be in the `page` content world in order to hook `window.print()`.
         webView?.configuration.userContentController.addUserScript(printHelperUserScript)
+        if MirlumiBuild.contentRulesEnabled, let webView {
+            ContentRules.shared.install(in: webView)
+        }
         // If Night Mode is enabled, inject a small user script to ensure
         // that it gets enabled immediately when the DOM loads.
         if nightMode {
