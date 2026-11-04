@@ -132,6 +132,7 @@ class AppDelegate: UIResponder,
         SafeSearch.shared.isEnabled = MirlumiBuild.safeSearchEnabled
         Allowlist.shared.isEnabled = MirlumiBuild.allowlistEnabled
         ImageCheck.shared.isEnabled = MirlumiBuild.imageCheckEnabled
+        Allowlist.shared.isOpenModeAvailable = MirlumiBuild.pageClassifierEnabled
 
         pushNotificationSetup()
         appLaunchUtil?.setUpPostLaunchDependencies()

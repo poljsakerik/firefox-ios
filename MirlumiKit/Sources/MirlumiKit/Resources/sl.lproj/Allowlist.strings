@@ -6,3 +6,5 @@
 "AllowedSitesBody" = "Odprejo se le strani s seznama za otroke in te strani. Če želite dodati stran, jo odprite in izberite Dovoli s PIN-om.";
 "AllowedSitesEmpty" = "Dovolili niste še nobene strani.";
 "Remove" = "Odstrani";
+"OpenAllSites" = "Odpri vse strani, blokiraj tvegane";
+"OpenAllSitesFooter" = "Strani s seznama in strani, ki ste jih dovolili, se vedno odprejo. Druge strani se preverijo na tej napravi in blokirajo, če so videti tvegane.";

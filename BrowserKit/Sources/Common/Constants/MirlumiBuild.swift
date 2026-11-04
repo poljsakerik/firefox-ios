@@ -25,6 +25,8 @@ public enum MirlumiBuild {
     public static let onlyDuckDuckGoEnabled = true
     /// Only sites on the list for children, and sites a parent allowed with the PIN, open.
     public static let allowlistEnabled = true
+    /// A parent can choose open mode: other sites open too, and the page classifier blocks risky pages and searches.
+    public static let pageClassifierEnabled = true
     /// Content rules hide and block short-form video and app prompts on the sites they name.
     public static let contentRulesEnabled = true
     /// Images stay hidden until they're checked, and explicit ones are replaced by a placeholder.

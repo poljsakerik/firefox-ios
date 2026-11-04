@@ -6,3 +6,5 @@
 "AllowedSitesBody" = "Only sites on the list for children open, and these. To add a site, open it and choose Allow with PIN.";
 "AllowedSitesEmpty" = "You haven’t allowed any sites yet.";
 "Remove" = "Remove";
+"OpenAllSites" = "Open all sites, block risky pages";
+"OpenAllSitesFooter" = "Sites on the list and sites you allowed always open. Other pages are checked on this device and blocked if they look risky.";

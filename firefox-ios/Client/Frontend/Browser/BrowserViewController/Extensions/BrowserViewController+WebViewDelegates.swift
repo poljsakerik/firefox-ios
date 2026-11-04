@@ -587,7 +587,15 @@ extension BrowserViewController: WKNavigationDelegate {
             handleAdsTelemetryForNavigation(url: url, tab: tab)
         }
 
-        if Allowlist.shared.handle(navigationAction, in: webView, presenter: self, decisionHandler: decisionHandler) {
+        let decideAgain: @MainActor () -> Void = { [weak self] in
+            guard let self else { return decisionHandler(.cancel) }
+            self.webView(webView, decidePolicyFor: navigationAction, decisionHandler: decisionHandler)
+        }
+        if Allowlist.shared.handle(navigationAction,
+                                   in: webView,
+                                   presenter: self,
+                                   decisionHandler: decisionHandler,
+                                   decideAgain: decideAgain) {
             return
         }
 

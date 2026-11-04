@@ -13,6 +13,8 @@ final class AllowlistTests: XCTestCase {
         init(_ saved: [String] = []) { self.saved = saved }
         func read() -> [String] { saved }
         func write(_ sites: [String]) { saved = sites }
+        func readMode() -> String? { nil }
+        func writeMode(_ mode: String) {}
     }
 
     private final class Page {}
@@ -179,7 +181,8 @@ final class AllowlistTests: XCTestCase {
         for language in ["en", "sl"] {
             let path = try XCTUnwrap(Bundle.module.path(forResource: language, ofType: "lproj"))
             let bundle = try XCTUnwrap(Bundle(path: path))
-            for key in ["AllowedSitesTitle", "AllowedSitesBody", "AllowedSitesEmpty", "Remove"] {
+            for key in ["AllowedSitesTitle", "AllowedSitesBody", "AllowedSitesEmpty", "Remove", "OpenAllSites",
+                        "OpenAllSitesFooter"] {
                 let value = bundle.localizedString(forKey: key, value: "MISSING", table: "Allowlist")
                 XCTAssertNotEqual(value, "MISSING", "\(language): \(key)")
             }

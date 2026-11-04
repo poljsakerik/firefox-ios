@@ -12,12 +12,18 @@ import UIKit
 @MainActor
 final class AllowedSitesModel: ObservableObject {
     @Published private(set) var sites: [String]
+    @Published var opensAllSites: Bool {
+        didSet { allowlist.browsingMode = opensAllSites ? .open : .allowlist }
+    }
+    let offersOpenMode: Bool
     private let allowlist: Allowlist
     private var subscription: AnyCancellable?
 
     init(allowlist: Allowlist) {
         self.allowlist = allowlist
         sites = allowlist.parentSites
+        opensAllSites = allowlist.browsingMode == .open
+        offersOpenMode = allowlist.isOpenModeAvailable
         subscription = NotificationCenter.default.publisher(for: Allowlist.parentSitesDidChange, object: allowlist)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in self?.sites = allowlist.parentSites }
@@ -33,6 +39,11 @@ struct AllowedSitesView: View {
 
     var body: some View {
         List {
+            if model.offersOpenMode {
+                Section(footer: Text(AllowlistL10n.string("OpenAllSitesFooter"))) {
+                    Toggle(AllowlistL10n.string("OpenAllSites"), isOn: $model.opensAllSites)
+                }
+            }
             Section(footer: Text(AllowlistL10n.string("AllowedSitesBody"))) {
                 if model.sites.isEmpty {
                     Text(AllowlistL10n.string("AllowedSitesEmpty")).foregroundColor(.secondary)

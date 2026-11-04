@@ -42,6 +42,10 @@ final class MirlumiBuildTests: XCTestCase {
         XCTAssertTrue(MirlumiBuild.imageCheckEnabled)
     }
 
+    func testOpenModeWithThePageClassifierIsOffered() {
+        XCTAssertTrue(MirlumiBuild.pageClassifierEnabled)
+    }
+
     func testIdentity() throws {
         let info = try XCTUnwrap(Bundle.main.infoDictionary)
         XCTAssertEqual(Bundle.main.bundleIdentifier, "app.mirlumi.browser.dev")

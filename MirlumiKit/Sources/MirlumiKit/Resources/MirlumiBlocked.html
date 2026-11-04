@@ -103,6 +103,7 @@ button:disabled {
       <p id="body"></p>
       <p id="parent"></p>
       <div class="actions">
+        <button id="retry" class="primary" type="button" hidden></button>
         <button id="allow" class="primary" type="button"></button>
         <button id="back" type="button" hidden></button>
       </div>
@@ -122,7 +123,24 @@ globalThis.MirlumiBlockedStrings = {
     "parent": "A parent can allow it with the Settings PIN.",
     "allow": "Allow with PIN",
     "back": "Go back",
-    "failed": "The PIN screen couldn't open. Try again."
+    "failed": "The PIN screen couldn't open. Try again.",
+    "flaggedTitle": "This page was blocked",
+    "flaggedBody": "It seems to be about {category}.",
+    "flaggedParent": "If that's wrong, a parent can allow the site with the Settings PIN.",
+    "searchTitle": "This search was blocked",
+    "searchBody": "It seems to be about {category}.",
+    "category.sexual": "adult content",
+    "category.gambling": "gambling",
+    "category.drugs": "drugs",
+    "category.hate_violence": "hate or violence",
+    "category.weapons": "weapons",
+    "category.dating": "dating",
+    "category.filter_bypass": "ways round the filter",
+    "category.piracy": "pirated films, music or software",
+    "category.hacking": "hacking",
+    "uncheckedTitle": "This page couldn't be checked",
+    "uncheckedBody": "Checking it took too long or failed, so it stays hidden.",
+    "retry": "Try again"
   },
   "sl": {
     "title": "Te strani ni na seznamu",
@@ -130,7 +148,24 @@ globalThis.MirlumiBlockedStrings = {
     "parent": "Starš jo lahko dovoli s PIN-om za nastavitve.",
     "allow": "Dovoli s PIN-om",
     "back": "Nazaj",
-    "failed": "Zaslona za PIN ni bilo mogoče odpreti. Poskusite znova."
+    "failed": "Zaslona za PIN ni bilo mogoče odpreti. Poskusite znova.",
+    "flaggedTitle": "Ta stran je blokirana",
+    "flaggedBody": "Videti je, da gre za {category}.",
+    "flaggedParent": "Če to ne drži, lahko starš stran dovoli s PIN-om za nastavitve.",
+    "searchTitle": "To iskanje je blokirano",
+    "searchBody": "Videti je, da gre za {category}.",
+    "category.sexual": "vsebine za odrasle",
+    "category.gambling": "igre na srečo",
+    "category.drugs": "droge",
+    "category.hate_violence": "sovraštvo ali nasilje",
+    "category.weapons": "orožje",
+    "category.dating": "zmenkarije",
+    "category.filter_bypass": "obhod filtra",
+    "category.piracy": "piratske filme, glasbo ali programe",
+    "category.hacking": "hekanje",
+    "uncheckedTitle": "Te strani ni bilo mogoče preveriti",
+    "uncheckedBody": "Preverjanje je trajalo predolgo ali ni uspelo, zato ostaja skrita.",
+    "retry": "Poskusi znova"
   }
 };
 </script>
@@ -162,13 +197,50 @@ globalThis.MirlumiBlockedStrings = {
     host = "";
   }
 
+  // Why the page is blocked: not on the list, or flagged by the page classifier in open mode. Android passes the
+  // reason in the query, iOS in the root element's data-reason. "search:<category>" is a flagged search, and
+  // "unchecked" a page whose check timed out or failed ("search:unchecked" for a search).
+  let reason = document.documentElement.getAttribute("data-reason") || "";
+  if (extension) {
+    const match = /[?&]reason=([\w:]+)/.exec(location.search);
+    reason = match ? match[1] : "";
+  }
+  const isSearch = reason.startsWith("search:");
+  const category = text[`category.${reason.replace(/^search:/, "")}`];
+  const isUnchecked = reason.replace(/^search:/, "") === "unchecked";
+
   const element = (id) => document.getElementById(id);
   document.documentElement.lang = language;
-  document.title = text.title;
-  for (const id of ["title", "body", "parent", "failed", "allow", "back"]) {
-    element(id).textContent = text[id];
+  const shown = Object.assign({}, text);
+  if (isUnchecked) {
+    shown.title = text.uncheckedTitle;
+    shown.body = text.uncheckedBody;
+  } else if (category) {
+    shown.title = isSearch ? text.searchTitle : text.flaggedTitle;
+    shown.body = (isSearch ? text.searchBody : text.flaggedBody).replace("{category}", category);
+    shown.parent = text.flaggedParent;
+  }
+  document.title = shown.title;
+  for (const id of ["title", "body", "parent", "failed", "allow", "back", "retry"]) {
+    element(id).textContent = shown[id];
   }
   element("host").textContent = host;
+  // Allowing the search engine's site wouldn't let a blocked search through, so searches offer only Back.
+  if ((category || isUnchecked) && isSearch) {
+    element("parent").hidden = true;
+  }
+
+  // Loading the address again checks the page again. On Android the request goes back through the extension; on iOS
+  // the blocked page stands in the address's place, so a reload is a new load of it.
+  const retry = element("retry");
+  retry.hidden = !isUnchecked;
+  retry.addEventListener("click", () => {
+    if (extension) {
+      location.replace(blockedUrl);
+    } else {
+      location.reload();
+    }
+  });
 
   const back = element("back");
   back.hidden = history.length < 2;
@@ -177,7 +249,7 @@ globalThis.MirlumiBlockedStrings = {
   const allow = element("allow");
   const failed = element("failed");
   // Another site could frame this page to make a parent allow an address of its choosing.
-  allow.hidden = window.top !== window;
+  allow.hidden = window.top !== window || isSearch;
   allow.addEventListener("click", async () => {
     failed.hidden = true;
     if (!extension) {
