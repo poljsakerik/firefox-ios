@@ -16,6 +16,7 @@ public final class SafeSearch {
     public var isEnabled = false
 
     private let rewrite: JSValue?
+    private let refuses: JSValue?
     #if canImport(WebKit)
     private lazy var navigationGuard = NavigationGuard(safeSearch: self)
     #endif
@@ -25,8 +26,11 @@ public final class SafeSearch {
         if let script {
             context?.evaluateScript(script)
         }
-        rewrite = context?.objectForKeyedSubscript("MirlumiSafeSearch")?.objectForKeyedSubscript("safeSearchUrl")
+        let rules = context?.objectForKeyedSubscript("MirlumiSafeSearch")
+        rewrite = rules?.objectForKeyedSubscript("safeSearchUrl")
+        refuses = rules?.objectForKeyedSubscript("refusesLoad")
         assert(rewrite?.isObject == true, "safe-search.js didn't define MirlumiSafeSearch.safeSearchUrl")
+        assert(refuses?.isObject == true, "safe-search.js didn't define MirlumiSafeSearch.refusesLoad")
     }
 
     /// The address to load instead of `url`, or nil to load `url` unchanged.
@@ -37,6 +41,15 @@ public final class SafeSearch {
               let address = result.toString()
         else { return nil }
         return URL(string: address)
+    }
+
+    /// Whether a page load of `url` with `method` must be cancelled: a form posted to DuckDuckGo, whose search is in
+    /// the body, where `safeURL(for:)` can't take the bangs out.
+    public func refusesLoad(of url: URL, method: String?) -> Bool {
+        guard isEnabled,
+              let result = refuses?.call(withArguments: [url.absoluteString, method ?? "GET"])
+        else { return false }
+        return result.isBoolean && result.toBool()
     }
 
     nonisolated static func bundledScript() -> String? {
@@ -56,9 +69,13 @@ extension SafeSearch {
                          decisionHandler: @MainActor (WKNavigationActionPolicy) -> Void) -> Bool {
         // A link to a new window has no frame yet: its own load, in the new tab, comes back here.
         guard let frame = action.targetFrame,
-              let url = action.request.url,
-              let safeURL = safeURL(for: url)
+              let url = action.request.url
         else { return false }
+        if refusesLoad(of: url, method: action.request.httpMethod) {
+            decisionHandler(.cancel)
+            return true
+        }
+        guard let safeURL = safeURL(for: url) else { return false }
 
         decisionHandler(.cancel)
         if frame.isMainFrame {

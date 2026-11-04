@@ -27,7 +27,7 @@ final class SafeSearchTests: XCTestCase {
 
     func testSearchesGoToTheSafeHost() {
         XCTAssertEqual(safe("https://duckduckgo.com/?q=cats&kp=-2"), "https://safe.duckduckgo.com/?q=cats&kp=-2")
-        XCTAssertEqual(safe("https://html.duckduckgo.com/html/?q=cats"), "https://safe.duckduckgo.com/html/?q=cats")
+        XCTAssertEqual(safe("https://html.duckduckgo.com/html/?q=cats"), "https://safe.duckduckgo.com/?q=cats")
         XCTAssertEqual(safe("http://www.duckduckgo.com/?q=cats"), "https://safe.duckduckgo.com/?q=cats")
         XCTAssertEqual(safe("https://noai.duckduckgo.com/?q=cats#x"), "https://safe.duckduckgo.com/?q=cats#x")
     }
@@ -41,7 +41,24 @@ final class SafeSearchTests: XCTestCase {
 
     func testTrailingDotHostsGoToTheSafeHost() {
         XCTAssertEqual(safe("https://duckduckgo.com./?q=cats"), "https://safe.duckduckgo.com/?q=cats")
-        XCTAssertEqual(safe("https://html.duckduckgo.com./html/?q=cats"), "https://safe.duckduckgo.com/html/?q=cats")
+        XCTAssertEqual(safe("https://html.duckduckgo.com./html/?q=cats"), "https://safe.duckduckgo.com/?q=cats")
+    }
+
+    func testBangsAreTakenOutOfSearches() {
+        XCTAssertEqual(safe("https://duckduckgo.com/?q=%21g+cats"), "https://safe.duckduckgo.com/?q=g+cats")
+        XCTAssertEqual(safe("https://safe.duckduckgo.com/?q=cats+g%21"), "https://safe.duckduckgo.com/?q=cats+g")
+        XCTAssertEqual(safe("https://safe.duckduckgo.com/?q=%5Ccats"), "https://safe.duckduckgo.com/?q=cats")
+        XCTAssertEqual(safe("https://safe.duckduckgo.com/?q=dogs;q=%EF%BC%81g"), "https://safe.duckduckgo.com/?q=dogs;q=g")
+    }
+
+    func testPostedFormsToDuckDuckGoAreRefused() {
+        let safeSearch = enabled()
+        XCTAssertTrue(safeSearch.refusesLoad(of: URL(string: "https://safe.duckduckgo.com/lite/")!, method: "POST"))
+        XCTAssertTrue(safeSearch.refusesLoad(of: URL(string: "https://duckduckgo.com/")!, method: "POST"))
+        XCTAssertFalse(safeSearch.refusesLoad(of: URL(string: "https://duckduckgo.com/")!, method: "GET"))
+        XCTAssertFalse(safeSearch.refusesLoad(of: URL(string: "https://duckduckgo.com/")!, method: nil))
+        XCTAssertFalse(safeSearch.refusesLoad(of: URL(string: "https://example.com/")!, method: "POST"))
+        XCTAssertFalse(SafeSearch().refusesLoad(of: URL(string: "https://duckduckgo.com/")!, method: "POST"))
     }
 
     #if canImport(WebKit)
