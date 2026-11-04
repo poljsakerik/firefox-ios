@@ -36,6 +36,24 @@ final class AllowlistTests: XCTestCase {
         XCTAssertFalse(allowlist.allows(url("http://127.0.0.1/")))
     }
 
+    func testAnInternationalHostIsMatchedInItsASCIIForm() throws {
+        guard #available(iOS 16, macOS 13, *) else { throw XCTSkip("international hosts open from iOS 16") }
+        let store = MemoryStore()
+        let allowlist = allowlist(store)
+        XCTAssertTrue(allowlist.allows(url("https://www.franček.si/")))
+        XCTAssertTrue(allowlist.allows(url("https://www.xn--franek-l2a.si/")))
+        XCTAssertEqual(allowlist.allow(url("https://www.zürich.ch/")), "xn--zrich-kva.ch")
+        XCTAssertTrue(allowlist.allows(url("https://zürich.ch/")))
+        XCTAssertEqual(store.saved, ["xn--zrich-kva.ch"])
+    }
+
+    func testAPercentEncodedHostIsRefused() {
+        let allowlist = allowlist()
+        XCTAssertFalse(allowlist.allows(url("https://pbskids%2eorg/")))
+        XCTAssertFalse(allowlist.allows(url("https://evil.com%2f.pbskids.org/")))
+        XCTAssertNil(allowlist.allow(url("https://example%2ecom/")))
+    }
+
     func testOtherSchemesAreLeftToTheBrowser() {
         let allowlist = allowlist()
         XCTAssertTrue(allowlist.allows(url("about:blank")))

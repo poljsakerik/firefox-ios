@@ -109,7 +109,7 @@ public final class Allowlist {
         guard let scheme = url.scheme?.lowercased(), scheme == "http" || scheme == "https" else { return true }
         guard let matcher,
               let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
-              let host = components.percentEncodedHost
+              let host = Self.host(of: components)
         else { return false }
         return matcher.allows(host: host, path: components.percentEncodedPath)
     }
@@ -117,7 +117,7 @@ public final class Allowlist {
     /// Adds the site at `url` to the parent's sites. Returns the entry added, or nil if there's nothing to add.
     @discardableResult
     func allow(_ url: URL) -> String? {
-        guard let host = URLComponents(url: url, resolvingAgainstBaseURL: false)?.percentEncodedHost,
+        guard let host = URLComponents(url: url, resolvingAgainstBaseURL: false).flatMap(Self.host(of:)),
               let entry = matcher?.entry(forHost: host)
         else { return nil }
         if !sites.contains(entry) {
@@ -167,6 +167,13 @@ public final class Allowlist {
         blockedAddresses.setObject(url as NSURL, forKey: page)
         simulatedAddresses.setObject(url as NSURL, forKey: page)
         return .block(url)
+    }
+
+    /// The host as entries are written: an international name in its ASCII form, anything else still percent-encoded so
+    /// that the matcher refuses it. Before iOS 16 international names stay percent-encoded, so they don't open.
+    static func host(of components: URLComponents) -> String? {
+        if #available(iOS 16, macOS 13, *) { return components.encodedHost }
+        return components.percentEncodedHost
     }
 
     /// For a reader view address, the article it shows, or `.some(nil)` if it doesn't name exactly one; nil for any other
