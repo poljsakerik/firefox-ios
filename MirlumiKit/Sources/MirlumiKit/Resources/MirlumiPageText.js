@@ -82,15 +82,15 @@ var MirlumiPageText = (function () {
     return changed >= CHANGED_CHUNKS;
   }
 
-  // How much text a batch of DOM mutations added or changed, for deciding inside a MutationObserver callback, before
+  // How much text a batch of DOM mutations added, removed or changed, for deciding inside a MutationObserver callback, before
   // anything is painted, whether to hide the page while it's checked again.
   function textAdded(records) {
     let length = 0;
     for (const record of records) {
       if (record.type === "characterData") {
         length += (record.target.data || "").length;
-      } else {
-        for (const node of record.addedNodes) {
+      } else if (record.type === "childList") {
+        for (const node of [...record.addedNodes, ...(record.removedNodes || [])]) {
           length += (node.textContent || "").length;
         }
       }

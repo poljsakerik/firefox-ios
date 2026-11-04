@@ -184,6 +184,8 @@ public final class PageCheck: NSObject {
       let added = 0;
       let timer = 0;
       let observer = null;
+      let watching = false;
+      let parsingTimer = 0;
 
       globalThis.mirlumiPageCheckStop = () => {
         stopped = true;
@@ -191,6 +193,7 @@ public final class PageCheck: NSObject {
           observer.disconnect();
         }
         clearTimeout(timer);
+        clearTimeout(parsingTimer);
         show();
       };
 
@@ -214,6 +217,12 @@ public final class PageCheck: NSObject {
         handler.postMessage({ type: "page", document: documentId, revision: current, address, page }).then(
           (reply) => {
             if (stopped || !reply || reply.verdict !== "clear" || reply.revision !== current || current !== revision) {
+              return;
+            }
+            hide();
+            const latest = read();
+            if (!latest || text.changedEnough(sent, text.pageState(location.href, latest))) {
+              send(latest);
               return;
             }
             cleared = true;
@@ -256,6 +265,11 @@ public final class PageCheck: NSObject {
       };
 
       const watch = () => {
+        if (stopped || watching) {
+          return;
+        }
+        watching = true;
+        clearTimeout(parsingTimer);
         send(read());
         observer = new MutationObserver((records) => {
           const theirs = records.filter((record) => record.target !== style &&
@@ -265,9 +279,10 @@ public final class PageCheck: NSObject {
             return;
           }
           added += text.textAdded(theirs);
-          changed(added >= HIDE_AFTER_CHARS || !sent || location.href !== sent.address);
+          changed(theirs.some((record) => record.type === "attributes") ||
+            added >= HIDE_AFTER_CHARS || !sent || location.href !== sent.address);
         });
-        observer.observe(document.documentElement, { subtree: true, childList: true, characterData: true });
+        observer.observe(document.documentElement, { subtree: true, childList: true, characterData: true, attributes: true });
         addEventListener("popstate", () => changed(true));
         addEventListener("hashchange", () => changed(true));
       };
@@ -284,6 +299,7 @@ public final class PageCheck: NSObject {
           documentId = reply.document;
           if (document.readyState === "loading") {
             document.addEventListener("DOMContentLoaded", watch, { once: true });
+            parsingTimer = setTimeout(watch, \(Int(timeout * 1000)));
           } else {
             watch();
           }

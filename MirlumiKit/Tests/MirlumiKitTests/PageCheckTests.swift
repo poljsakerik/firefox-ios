@@ -39,6 +39,28 @@ final class PageCheckTests: XCTestCase {
         }
     }
 
+    private actor GatedClassifier: PageClassifying {
+        private var pending: [CheckedContinuation<PageVerdict, Never>] = []
+        private var arrivals: [Int: CheckedContinuation<Void, Never>] = [:]
+        nonisolated func prepare() {}
+        func checkPage(_ page: PageText) async -> PageVerdict {
+            await withCheckedContinuation { continuation in
+                pending.append(continuation)
+                arrivals.removeValue(forKey: pending.count)?.resume()
+            }
+        }
+        func checkSearch(_ query: String) async -> PageVerdict { await checkPage(PageText()) }
+        func waitForCalls(_ count: Int) async {
+            if pending.count >= count { return }
+            await withCheckedContinuation { arrivals[count] = $0 }
+        }
+        func releaseAll() {
+            let answers = pending
+            pending.removeAll()
+            answers.forEach { $0.resume(returning: .clear) }
+        }
+    }
+
     private func url(_ string: String) -> URL { URL(string: string)! }
 
     private func openAllowlist(_ store: MemoryStore = MemoryStore(mode: "open")) -> Allowlist {
@@ -308,12 +330,15 @@ final class PageCheckTests: XCTestCase {
 
     func testAnAnswerForAnOlderRevisionIsIgnored() async throws {
         let allowlist = openAllowlist()
-        let check = PageCheck(allowlist: allowlist, classifier: FakeClassifier(.clear, after: 0.2))
+        let classifier = GatedClassifier()
+        let check = PageCheck(allowlist: allowlist, classifier: classifier)
         let address = url("https://example.com/app")
         let (page, document) = try checkedPage(address.absoluteString, in: check, allowlist: allowlist)
         let first = Task { await check.check(PageText(), at: address, in: page, document: document, revision: 1) }
-        try await Task.sleep(nanoseconds: 50_000_000)
+        await classifier.waitForCalls(1)
         let second = Task { await check.check(recipe, at: address, in: page, document: document, revision: 2) }
+        await classifier.waitForCalls(2)
+        await classifier.releaseAll()
         let firstOutcome = await first.value
         let secondOutcome = await second.value
         XCTAssertEqual(firstOutcome, .stale)
@@ -324,13 +349,15 @@ final class PageCheckTests: XCTestCase {
 
     func testAnAnswerForAnOlderDocumentIsIgnored() async throws {
         let allowlist = openAllowlist()
-        let check = PageCheck(allowlist: allowlist, classifier: FakeClassifier(.clear, after: 0.2))
+        let classifier = GatedClassifier()
+        let check = PageCheck(allowlist: allowlist, classifier: classifier)
         let address = url("https://example.com/")
         let (page, document) = try checkedPage(address.absoluteString, in: check, allowlist: allowlist)
         let old = Task { await check.check(recipe, at: address, in: page, document: document, revision: 1) }
-        try await Task.sleep(nanoseconds: 50_000_000)
+        await classifier.waitForCalls(1)
         let next = try XCTUnwrap(check.startDocument(in: page, at: address))
         XCTAssertNotEqual(next, document)
+        await classifier.releaseAll()
         let oldOutcome = await old.value
         XCTAssertEqual(oldOutcome, .stale)
     }
@@ -376,12 +403,14 @@ final class PageCheckTests: XCTestCase {
 
     func testTurningOpenModeOffRevalidatesPagesAndDropsPendingAnswers() async throws {
         let allowlist = openAllowlist()
-        let check = PageCheck(allowlist: allowlist, classifier: FakeClassifier(.clear, after: 0.2))
+        let classifier = GatedClassifier()
+        let check = PageCheck(allowlist: allowlist, classifier: classifier)
         let address = url("https://example.com/")
         let (page, document) = try checkedPage(address.absoluteString, in: check, allowlist: allowlist)
         let pending = Task { await check.check(recipe, at: address, in: page, document: document, revision: 1) }
-        try await Task.sleep(nanoseconds: 50_000_000)
+        await classifier.waitForCalls(1)
         allowlist.browsingMode = .allowlist
+        await classifier.releaseAll()
         let outcome = await pending.value
         XCTAssertEqual(outcome, .stale)
 
