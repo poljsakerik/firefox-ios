@@ -307,6 +307,7 @@ class SearchEnginesManager: SearchEnginesManagerProvider {
 
     /// Adds an engine to the front of the search engines list.
     func addSearchEngine(_ engine: OpenSearchEngine) {
+        guard MirlumiSearchEngines.allowsCustomEngines else { return }
         customEngines.append(engine)
         orderedEngines.insert(engine, at: 1)
         saveCustomEngines()
@@ -340,8 +341,9 @@ class SearchEnginesManager: SearchEnginesManagerProvider {
         let enginePrefs = getSearchPrefs()
         engineProvider.getOrderedEngines(customEngines: customEngines,
                                          engineOrderingPrefs: enginePrefs,
-                                         prefsMigrator: DefaultSearchEnginePrefsMigrator(),
-                                         completion: completion)
+                                         prefsMigrator: DefaultSearchEnginePrefsMigrator()) { prefs, engines in
+            completion(prefs, MirlumiSearchEngines.allowed(engines))
+        }
         // After decoding our engines, ensure we save them back to disk, to ensure any
         // defaults generated during decoding (e.g. UUIDs for custom engines) are re-saved
         saveCustomEngines()

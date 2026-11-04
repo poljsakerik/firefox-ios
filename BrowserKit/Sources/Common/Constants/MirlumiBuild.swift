@@ -20,6 +20,9 @@ public enum MirlumiBuild {
     public static let settingsLockEnabled = true
     /// DuckDuckGo searches always load from its strict safe search host, safe.duckduckgo.com.
     public static let safeSearchEnabled = true
+    /// DuckDuckGo is the only search engine, with no others to choose, add or search once with. Google Lens needs
+    /// Google as the default engine, so it's gone too.
+    public static let onlyDuckDuckGoEnabled = true
     /// Only sites on the list for children, and sites a parent allowed with the PIN, open.
     public static let allowlistEnabled = true
     /// Content rules hide and block short-form video and app prompts on the sites they name.

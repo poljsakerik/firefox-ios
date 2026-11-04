@@ -2,11 +2,25 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/
 
+import Common
 import Foundation
+import MirlumiKit
 import UIKit
 
 /// The built-in search engines, used instead of Mozilla's Remote Settings list. None carries a partner code.
 enum MirlumiSearchEngines {
+    static var allowsCustomEngines: Bool {
+        OnlyDuckDuckGo.allowsCustomEngines(enabled: MirlumiBuild.onlyDuckDuckGoEnabled)
+    }
+
+    /// The engines out of `engines` that `OnlyDuckDuckGo` allows.
+    static func allowed(_ engines: [OpenSearchEngine],
+                        onlyDuckDuckGo: Bool = MirlumiBuild.onlyDuckDuckGoEnabled) -> [OpenSearchEngine] {
+        engines.filter {
+            OnlyDuckDuckGo.allows(engineID: $0.engineID, isCustomEngine: $0.isCustomEngine, enabled: onlyDuckDuckGo)
+        }
+    }
+
     struct Definition {
         let id: String
         let name: String
@@ -18,7 +32,7 @@ enum MirlumiSearchEngines {
     static func definitions(languageCode: String?) -> [Definition] {
         let wikipediaHost = languageCode?.hasPrefix("sl") == true ? "sl.wikipedia.org" : "en.wikipedia.org"
         return [
-            Definition(id: "ddg",
+            Definition(id: OnlyDuckDuckGo.engineID,
                        name: "DuckDuckGo",
                        color: UIColor(red: 0.87, green: 0.35, blue: 0.20, alpha: 1),
                        searchTemplate: "https://duckduckgo.com/?q={searchTerms}",

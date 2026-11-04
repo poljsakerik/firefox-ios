@@ -533,6 +533,9 @@ final class SearchSettingsTableViewController: ThemedTableViewController,
            let alternateEnginesIndex = sectionsToDisplay.firstIndex(of: .alternateEngines) {
             sectionsToDisplay.insert(.googleLens, at: alternateEnginesIndex)
         }
+        if !MirlumiSearchEngines.allowsCustomEngines {
+            sectionsToDisplay.removeAll { $0 == .alternateEngines }
+        }
         return sectionsToDisplay.count
     }
 

@@ -4,6 +4,7 @@
 
 import Common
 import Shared
+import UIKit
 import XCTest
 
 @testable import Client
@@ -75,6 +76,25 @@ final class MirlumiBuildTests: XCTestCase {
             XCTAssertFalse(engine.searchTemplate.contains(OpenSearchEngine.partnerCodeComponent), engine.shortName)
             XCTAssertFalse(engine.isCustomEngine, engine.shortName)
         }
+    }
+
+    func testDuckDuckGoIsTheOnlySearchEngine() throws {
+        XCTAssertTrue(MirlumiBuild.onlyDuckDuckGoEnabled)
+        XCTAssertFalse(MirlumiSearchEngines.allowsCustomEngines)
+
+        let bundled = MirlumiSearchEngines.bundled(languageCode: "en")
+        let custom = OpenSearchEngine(engineID: "ddg",
+                                      shortName: "Custom",
+                                      telemetrySuffix: nil,
+                                      image: UIImage(),
+                                      searchTemplate: "https://example.com/?q={searchTerms}",
+                                      suggestTemplate: nil,
+                                      isCustomEngine: true)
+        let allowed = MirlumiSearchEngines.allowed([custom] + bundled)
+        XCTAssertEqual(allowed.map(\.shortName), ["DuckDuckGo"])
+        // Google Lens is only offered while Google is the default engine.
+        XCTAssertFalse(try XCTUnwrap(allowed.first).isGoogleEngine)
+        XCTAssertEqual(MirlumiSearchEngines.allowed(bundled, onlyDuckDuckGo: false).count, bundled.count)
     }
 
     func testSlovenianSearchUsesSlovenianWikipedia() throws {
