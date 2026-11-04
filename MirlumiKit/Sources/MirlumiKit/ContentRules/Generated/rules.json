@@ -1,0 +1,107 @@
+{
+  "schema": 1,
+  "version": 1,
+  "sites": {
+    "instagram": [
+      {
+        "hosts": [
+          "instagram.com"
+        ],
+        "blockPaths": [
+          "^/reels?(?:/|$)",
+          "^/[^/]+/reels?(?:/|$)"
+        ],
+        "redirect": "/",
+        "hide": [
+          "a[href*=\"/reel/\"]",
+          "a[href*=\"/reels/\"]",
+          "a[href=\"/reels\"]",
+          ":is(li, [role=\"listitem\"]):has(> a[href=\"/reels\"], > a[href^=\"/reels/\"]):not(:has(> :not(a[href=\"/reels\"], a[href^=\"/reels/\"])))",
+          "article:has(a[href*=\"/reel/\"])",
+          "div:has(> a[href*=\"/reel/\"]):not(:has(> :not(a[href*=\"/reel/\"])))",
+          "a:has(path[d*=\"m-7.085 6.055-5.25 3\"])",
+          "div:has(> a path[d*=\"m-7.085 6.055-5.25 3\"]):not(:has(> :not(a)))",
+          "div:has(> span > div > a[href^=\"/reels/\"])",
+          "div:has(> a[href^=\"/reels/\"]):not(:has(> a:not([href^=\"/reels/\"])))",
+          "[role=\"tablist\"] > div:has(> a[href*=\"/reels/\"])",
+          "div:has(a[href^=\"/p/\"] path[d*=\"m-7.085 6.055-5.25 3\"]) > div:has(> [role=\"progressbar\"])",
+          "div:has(> div > div > a[href^=\"/p/\"] path[d*=\"m-7.085 6.055-5.25 3\"])"
+        ]
+      },
+      {
+        "hosts": [
+          "instagram.com"
+        ],
+        "hide": [
+          "main div:has(> h1) + div:has(> button[type=\"button\"] > div:only-child)",
+          "div:has(> div > div > button[type=\"button\"]):has(> div > div > div[role=\"button\"] polyline[points=\"20.643 3.357 12 12 3.353 20.647\"])",
+          "a[href*=\"//www.threads.com\"]",
+          "a[href*=\"//www.threads.net\"]",
+          "a[href*=\"//apps.apple.com\"]",
+          "a[href*=\"//play.google.com\"]"
+        ]
+      }
+    ],
+    "snapchat": [
+      {
+        "hosts": [
+          "snapchat.com"
+        ],
+        "blockPaths": [
+          "^/(?:[a-z]{2,3}-[A-Za-z]{2,4}/)?spotlight(?:/|$)",
+          "^/(?:[a-z]{2,3}-[A-Za-z]{2,4}/)?@[^/]+/spotlight(?:/|$)",
+          "^/(?:[a-z]{2,3}-[A-Za-z]{2,4}/)?discover(?:/|$)",
+          "^/(?:[a-z]{2,3}-[A-Za-z]{2,4}/)?explore(?:/|$)",
+          "^/(?:[a-z]{2,3}-[A-Za-z]{2,4}/)?topic(?:/|$)",
+          "^/(?:[a-z]{2,3}-[A-Za-z]{2,4}/)?entertainment(?:/|$)"
+        ],
+        "redirect": "/web/",
+        "hide": [
+          "a[href*=\"/spotlight\"]"
+        ]
+      },
+      {
+        "hosts": [
+          "snapchat.com"
+        ],
+        "blockPaths": [
+          "^/(?:[a-z]{2,3}-[A-Za-z]{2,4}/)?download(?:/|$)"
+        ],
+        "redirect": "/web/",
+        "hide": [
+          "[data-testid=\"mobileCTAHeader\"]",
+          "a[href*=\"//click.snapchat.com\"]",
+          "a[href*=\"//link.snapchat.com\"]",
+          "a[href*=\"//apps.apple.com\"]",
+          "a[href*=\"//play.google.com\"]"
+        ]
+      }
+    ],
+    "youtube": [
+      {
+        "hosts": [
+          "youtube.com"
+        ],
+        "blockPaths": [
+          "^/shorts(?:/|$)",
+          "^/feed/shorts(?:/|$)",
+          "^/(?:@[^/]+|channel/[^/]+|c/[^/]+|user/[^/]+)/shorts/?$"
+        ],
+        "redirect": "/",
+        "hide": [
+          "ytm-reel-shelf-renderer",
+          "ytm-shorts-lockup-view-model",
+          "ytm-shorts-lockup-view-model-v2",
+          "ytm-rich-section-renderer:has(ytm-reel-shelf-renderer, ytm-shorts-lockup-view-model, ytm-shorts-lockup-view-model-v2)",
+          "grid-shelf-view-model:has(ytm-shorts-lockup-view-model, ytm-shorts-lockup-view-model-v2)",
+          "ytm-pivot-bar-item-renderer:has(.pivot-shorts)",
+          "ytm-video-with-context-renderer:has(a[href^=\"/shorts/\"])",
+          "ytm-video-with-context-renderer:has(ytm-thumbnail-overlay-time-status-renderer[data-style=\"SHORTS\"])",
+          "ytm-video-with-context-renderer:has(.big-shorts-singleton)",
+          "ytm-compact-video-renderer:has(a[href^=\"/shorts/\"])",
+          "a[href^=\"/shorts/\"]"
+        ]
+      }
+    ]
+  }
+}

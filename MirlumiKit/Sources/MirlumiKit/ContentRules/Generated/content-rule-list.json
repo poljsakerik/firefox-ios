@@ -1,0 +1,434 @@
+[
+  {
+    "trigger": {
+      "url-filter": ".*",
+      "if-domain": [
+        "*instagram.com"
+      ]
+    },
+    "action": {
+      "type": "css-display-none",
+      "selector": "a[href*=\"/reel/\"]"
+    }
+  },
+  {
+    "trigger": {
+      "url-filter": ".*",
+      "if-domain": [
+        "*instagram.com"
+      ]
+    },
+    "action": {
+      "type": "css-display-none",
+      "selector": "a[href*=\"/reels/\"]"
+    }
+  },
+  {
+    "trigger": {
+      "url-filter": ".*",
+      "if-domain": [
+        "*instagram.com"
+      ]
+    },
+    "action": {
+      "type": "css-display-none",
+      "selector": "a[href=\"/reels\"]"
+    }
+  },
+  {
+    "trigger": {
+      "url-filter": ".*",
+      "if-domain": [
+        "*instagram.com"
+      ]
+    },
+    "action": {
+      "type": "css-display-none",
+      "selector": ":is(li, [role=\"listitem\"]):has(> a[href=\"/reels\"], > a[href^=\"/reels/\"]):not(:has(> :not(a[href=\"/reels\"], a[href^=\"/reels/\"])))"
+    }
+  },
+  {
+    "trigger": {
+      "url-filter": ".*",
+      "if-domain": [
+        "*instagram.com"
+      ]
+    },
+    "action": {
+      "type": "css-display-none",
+      "selector": "article:has(a[href*=\"/reel/\"])"
+    }
+  },
+  {
+    "trigger": {
+      "url-filter": ".*",
+      "if-domain": [
+        "*instagram.com"
+      ]
+    },
+    "action": {
+      "type": "css-display-none",
+      "selector": "div:has(> a[href*=\"/reel/\"]):not(:has(> :not(a[href*=\"/reel/\"])))"
+    }
+  },
+  {
+    "trigger": {
+      "url-filter": ".*",
+      "if-domain": [
+        "*instagram.com"
+      ]
+    },
+    "action": {
+      "type": "css-display-none",
+      "selector": "a:has(path[d*=\"m-7.085 6.055-5.25 3\"])"
+    }
+  },
+  {
+    "trigger": {
+      "url-filter": ".*",
+      "if-domain": [
+        "*instagram.com"
+      ]
+    },
+    "action": {
+      "type": "css-display-none",
+      "selector": "div:has(> a path[d*=\"m-7.085 6.055-5.25 3\"]):not(:has(> :not(a)))"
+    }
+  },
+  {
+    "trigger": {
+      "url-filter": ".*",
+      "if-domain": [
+        "*instagram.com"
+      ]
+    },
+    "action": {
+      "type": "css-display-none",
+      "selector": "div:has(> span > div > a[href^=\"/reels/\"])"
+    }
+  },
+  {
+    "trigger": {
+      "url-filter": ".*",
+      "if-domain": [
+        "*instagram.com"
+      ]
+    },
+    "action": {
+      "type": "css-display-none",
+      "selector": "div:has(> a[href^=\"/reels/\"]):not(:has(> a:not([href^=\"/reels/\"])))"
+    }
+  },
+  {
+    "trigger": {
+      "url-filter": ".*",
+      "if-domain": [
+        "*instagram.com"
+      ]
+    },
+    "action": {
+      "type": "css-display-none",
+      "selector": "[role=\"tablist\"] > div:has(> a[href*=\"/reels/\"])"
+    }
+  },
+  {
+    "trigger": {
+      "url-filter": ".*",
+      "if-domain": [
+        "*instagram.com"
+      ]
+    },
+    "action": {
+      "type": "css-display-none",
+      "selector": "div:has(a[href^=\"/p/\"] path[d*=\"m-7.085 6.055-5.25 3\"]) > div:has(> [role=\"progressbar\"])"
+    }
+  },
+  {
+    "trigger": {
+      "url-filter": ".*",
+      "if-domain": [
+        "*instagram.com"
+      ]
+    },
+    "action": {
+      "type": "css-display-none",
+      "selector": "div:has(> div > div > a[href^=\"/p/\"] path[d*=\"m-7.085 6.055-5.25 3\"])"
+    }
+  },
+  {
+    "trigger": {
+      "url-filter": ".*",
+      "if-domain": [
+        "*instagram.com"
+      ]
+    },
+    "action": {
+      "type": "css-display-none",
+      "selector": "main div:has(> h1) + div:has(> button[type=\"button\"] > div:only-child)"
+    }
+  },
+  {
+    "trigger": {
+      "url-filter": ".*",
+      "if-domain": [
+        "*instagram.com"
+      ]
+    },
+    "action": {
+      "type": "css-display-none",
+      "selector": "div:has(> div > div > button[type=\"button\"]):has(> div > div > div[role=\"button\"] polyline[points=\"20.643 3.357 12 12 3.353 20.647\"])"
+    }
+  },
+  {
+    "trigger": {
+      "url-filter": ".*",
+      "if-domain": [
+        "*instagram.com"
+      ]
+    },
+    "action": {
+      "type": "css-display-none",
+      "selector": "a[href*=\"//www.threads.com\"]"
+    }
+  },
+  {
+    "trigger": {
+      "url-filter": ".*",
+      "if-domain": [
+        "*instagram.com"
+      ]
+    },
+    "action": {
+      "type": "css-display-none",
+      "selector": "a[href*=\"//www.threads.net\"]"
+    }
+  },
+  {
+    "trigger": {
+      "url-filter": ".*",
+      "if-domain": [
+        "*instagram.com"
+      ]
+    },
+    "action": {
+      "type": "css-display-none",
+      "selector": "a[href*=\"//apps.apple.com\"]"
+    }
+  },
+  {
+    "trigger": {
+      "url-filter": ".*",
+      "if-domain": [
+        "*instagram.com"
+      ]
+    },
+    "action": {
+      "type": "css-display-none",
+      "selector": "a[href*=\"//play.google.com\"]"
+    }
+  },
+  {
+    "trigger": {
+      "url-filter": ".*",
+      "if-domain": [
+        "*snapchat.com"
+      ]
+    },
+    "action": {
+      "type": "css-display-none",
+      "selector": "a[href*=\"/spotlight\"]"
+    }
+  },
+  {
+    "trigger": {
+      "url-filter": ".*",
+      "if-domain": [
+        "*snapchat.com"
+      ]
+    },
+    "action": {
+      "type": "css-display-none",
+      "selector": "[data-testid=\"mobileCTAHeader\"]"
+    }
+  },
+  {
+    "trigger": {
+      "url-filter": ".*",
+      "if-domain": [
+        "*snapchat.com"
+      ]
+    },
+    "action": {
+      "type": "css-display-none",
+      "selector": "a[href*=\"//click.snapchat.com\"]"
+    }
+  },
+  {
+    "trigger": {
+      "url-filter": ".*",
+      "if-domain": [
+        "*snapchat.com"
+      ]
+    },
+    "action": {
+      "type": "css-display-none",
+      "selector": "a[href*=\"//link.snapchat.com\"]"
+    }
+  },
+  {
+    "trigger": {
+      "url-filter": ".*",
+      "if-domain": [
+        "*snapchat.com"
+      ]
+    },
+    "action": {
+      "type": "css-display-none",
+      "selector": "a[href*=\"//apps.apple.com\"]"
+    }
+  },
+  {
+    "trigger": {
+      "url-filter": ".*",
+      "if-domain": [
+        "*snapchat.com"
+      ]
+    },
+    "action": {
+      "type": "css-display-none",
+      "selector": "a[href*=\"//play.google.com\"]"
+    }
+  },
+  {
+    "trigger": {
+      "url-filter": ".*",
+      "if-domain": [
+        "*youtube.com"
+      ]
+    },
+    "action": {
+      "type": "css-display-none",
+      "selector": "ytm-reel-shelf-renderer"
+    }
+  },
+  {
+    "trigger": {
+      "url-filter": ".*",
+      "if-domain": [
+        "*youtube.com"
+      ]
+    },
+    "action": {
+      "type": "css-display-none",
+      "selector": "ytm-shorts-lockup-view-model"
+    }
+  },
+  {
+    "trigger": {
+      "url-filter": ".*",
+      "if-domain": [
+        "*youtube.com"
+      ]
+    },
+    "action": {
+      "type": "css-display-none",
+      "selector": "ytm-shorts-lockup-view-model-v2"
+    }
+  },
+  {
+    "trigger": {
+      "url-filter": ".*",
+      "if-domain": [
+        "*youtube.com"
+      ]
+    },
+    "action": {
+      "type": "css-display-none",
+      "selector": "ytm-rich-section-renderer:has(ytm-reel-shelf-renderer, ytm-shorts-lockup-view-model, ytm-shorts-lockup-view-model-v2)"
+    }
+  },
+  {
+    "trigger": {
+      "url-filter": ".*",
+      "if-domain": [
+        "*youtube.com"
+      ]
+    },
+    "action": {
+      "type": "css-display-none",
+      "selector": "grid-shelf-view-model:has(ytm-shorts-lockup-view-model, ytm-shorts-lockup-view-model-v2)"
+    }
+  },
+  {
+    "trigger": {
+      "url-filter": ".*",
+      "if-domain": [
+        "*youtube.com"
+      ]
+    },
+    "action": {
+      "type": "css-display-none",
+      "selector": "ytm-pivot-bar-item-renderer:has(.pivot-shorts)"
+    }
+  },
+  {
+    "trigger": {
+      "url-filter": ".*",
+      "if-domain": [
+        "*youtube.com"
+      ]
+    },
+    "action": {
+      "type": "css-display-none",
+      "selector": "ytm-video-with-context-renderer:has(a[href^=\"/shorts/\"])"
+    }
+  },
+  {
+    "trigger": {
+      "url-filter": ".*",
+      "if-domain": [
+        "*youtube.com"
+      ]
+    },
+    "action": {
+      "type": "css-display-none",
+      "selector": "ytm-video-with-context-renderer:has(ytm-thumbnail-overlay-time-status-renderer[data-style=\"SHORTS\"])"
+    }
+  },
+  {
+    "trigger": {
+      "url-filter": ".*",
+      "if-domain": [
+        "*youtube.com"
+      ]
+    },
+    "action": {
+      "type": "css-display-none",
+      "selector": "ytm-video-with-context-renderer:has(.big-shorts-singleton)"
+    }
+  },
+  {
+    "trigger": {
+      "url-filter": ".*",
+      "if-domain": [
+        "*youtube.com"
+      ]
+    },
+    "action": {
+      "type": "css-display-none",
+      "selector": "ytm-compact-video-renderer:has(a[href^=\"/shorts/\"])"
+    }
+  },
+  {
+    "trigger": {
+      "url-filter": ".*",
+      "if-domain": [
+        "*youtube.com"
+      ]
+    },
+    "action": {
+      "type": "css-display-none",
+      "selector": "a[href^=\"/shorts/\"]"
+    }
+  }
+]

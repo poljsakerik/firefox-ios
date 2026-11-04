@@ -20,11 +20,16 @@ let package = Package(
     targets: [
         .target(
             name: "MirlumiKit",
-            resources: [.process("Resources")]
+            resources: [
+                .process("Resources"),
+                // packages/content-rules/generate.mjs in the mirlumi repository writes these. Don't edit them here.
+                .copy("ContentRules/Generated")
+            ]
         ),
         .testTarget(
             name: "MirlumiKitTests",
-            dependencies: ["MirlumiKit"]
+            dependencies: ["MirlumiKit"],
+            exclude: ["Fixtures"]
         )
     ]
 )
