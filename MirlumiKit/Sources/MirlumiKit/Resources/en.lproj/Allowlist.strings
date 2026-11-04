@@ -1,0 +1,8 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/ */
+
+"AllowedSitesTitle" = "Sites you allowed";
+"AllowedSitesBody" = "Only sites on the list for children open, and these. To add a site, open it and choose Allow with PIN.";
+"AllowedSitesEmpty" = "You haven’t allowed any sites yet.";
+"Remove" = "Remove";

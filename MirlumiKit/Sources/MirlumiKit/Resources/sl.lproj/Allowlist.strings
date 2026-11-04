@@ -1,0 +1,8 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/ */
+
+"AllowedSitesTitle" = "Strani, ki ste jih dovolili";
+"AllowedSitesBody" = "Odprejo se le strani s seznama za otroke in te strani. Če želite dodati stran, jo odprite in izberite Dovoli s PIN-om.";
+"AllowedSitesEmpty" = "Dovolili niste še nobene strani.";
+"Remove" = "Odstrani";
