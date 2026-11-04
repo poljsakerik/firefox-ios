@@ -15,6 +15,7 @@ function fixture(loading = false) {
   const events = {};
   const requests = [];
   let nextTimer = 0;
+  let reads = 0;
   const root = { appendChild(node) { node.parentNode = this; } };
   const document = {
     documentElement: root, readyState: loading ? 'loading' : 'complete',
@@ -34,7 +35,7 @@ function fixture(loading = false) {
       disconnect() {}
     },
     MirlumiPageText: {
-      readPage() { assert.ok(style.parentNode, 'hide before reading'); return { ...page }; },
+      readPage() { reads += 1; return { ...page }; },
       pageState(address, value) { return { address, ...value }; },
       changedEnough(a, b) { return JSON.stringify(a) !== JSON.stringify(b); },
       textAdded() { return 0; }
@@ -49,6 +50,7 @@ function fixture(loading = false) {
   vm.runInNewContext(script, context);
   return {
     requests, events, timers,
+    reads: () => reads,
     hidden: () => !!style.parentNode,
     observer: () => observer,
     setPage(value) { page = { ...page, body: value }; },
@@ -71,7 +73,7 @@ const clear = async (f, index) => {
   await flush();
 };
 
-test('attribute reveal hides immediately and rereads before clearing; own style is ignored', async () => {
+test('an attribute change that reveals text hides at once and is checked; own style is ignored', async () => {
   const f = fixture();
   await flush();
   await clear(f, 0);
@@ -114,3 +116,18 @@ for (const deadlineFirst of [true, false]) {
     assert.equal(f.requests.length, 1);
   });
 }
+
+test('an animation that only changes attributes keeps the page shown and reads it at most every 100 ms', async () => {
+  const f = fixture();
+  await flush();
+  await clear(f, 0);
+  const before = f.reads();
+  f.mutate();
+  assert.equal(f.hidden(), false);
+  assert.equal(f.reads(), before + 1);
+  f.mutate();
+  f.mutate();
+  assert.equal(f.hidden(), false);
+  assert.equal(f.reads(), before + 1);
+  assert.equal(f.requests.length, 1);
+});

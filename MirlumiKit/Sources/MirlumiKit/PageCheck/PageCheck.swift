@@ -175,6 +175,7 @@ public final class PageCheck: NSObject {
       const text = MirlumiPageText;
       const HIDE_AFTER_CHARS = 200;
       const SETTLE_MS = 300;
+      const ATTRIBUTE_READ_MS = 100;
       let stopped = false;
       let documentId = 0;
       let revision = 0;
@@ -186,6 +187,8 @@ public final class PageCheck: NSObject {
       let observer = null;
       let watching = false;
       let parsingTimer = 0;
+      let lastAttributeRead = 0;
+      let attributeTimer = 0;
 
       globalThis.mirlumiPageCheckStop = () => {
         stopped = true;
@@ -194,6 +197,7 @@ public final class PageCheck: NSObject {
         }
         clearTimeout(timer);
         clearTimeout(parsingTimer);
+        clearTimeout(attributeTimer);
         show();
       };
 
@@ -264,6 +268,32 @@ public final class PageCheck: NSObject {
         }
       };
 
+      // Attribute changes can reveal hidden text, but animations make them constantly. The page is read at most once
+      // every ATTRIBUTE_READ_MS, with one read after the last change, and hidden only if its text changed enough.
+      const attributeCheck = () => {
+        attributeTimer = 0;
+        lastAttributeRead = Date.now();
+        if (stopped || timer) {
+          return;
+        }
+        const page = read();
+        if (!page || !sent || text.changedEnough(sent, text.pageState(location.href, page))) {
+          changed(true);
+        }
+      };
+
+      const attributeChanged = () => {
+        if (attributeTimer) {
+          return;
+        }
+        const wait = lastAttributeRead + ATTRIBUTE_READ_MS - Date.now();
+        if (wait <= 0) {
+          attributeCheck();
+        } else {
+          attributeTimer = setTimeout(attributeCheck, wait);
+        }
+      };
+
       const watch = () => {
         if (stopped || watching) {
           return;
@@ -283,8 +313,13 @@ public final class PageCheck: NSObject {
             return;
           }
           added += text.textAdded(theirs);
-          changed(theirs.some((record) => record.type === "attributes") ||
-            added >= HIDE_AFTER_CHARS || !sent || location.href !== sent.address);
+          if (added >= HIDE_AFTER_CHARS || !sent || location.href !== sent.address) {
+            changed(true);
+          } else if (theirs.some((record) => record.type === "attributes")) {
+            attributeChanged();
+          } else {
+            changed(false);
+          }
         });
         observer.observe(document.documentElement, { subtree: true, childList: true, characterData: true, attributes: true });
         addEventListener("popstate", () => changed(true));
