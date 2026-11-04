@@ -26,6 +26,9 @@ extension Allowlist {
                               source: sourceFrame?.request.url)
         switch decision {
         case .pass:
+            if action.targetFrame?.isMainFrame == true {
+                PageCheck.shared.navigationPassed(to: url, in: webView)
+            }
             return false
         case .cancel:
             decisionHandler(.cancel)

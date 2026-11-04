@@ -39,7 +39,15 @@ public final class PageCheck: NSObject {
     private final class Document {
         let id: Int
         var revision = 0
-        init(id: Int) { self.id = id }
+        /// The address its latest revision was checked at, or where it started.
+        var url: URL
+        /// Whether its latest revision was cleared, or it needed no check.
+        var cleared: Bool
+        init(id: Int, url: URL, cleared: Bool) {
+            self.id = id
+            self.url = url
+            self.cleared = cleared
+        }
     }
 
     var timeout = PageCheck.timeout
@@ -50,10 +58,17 @@ public final class PageCheck: NSObject {
     /// The document each page shows, from its script's start.
     private let documents = NSMapTable<AnyObject, Document>.weakToStrongObjects()
     private var lastDocument = 0
+    /// The pages kept from view natively until their check clears them.
+    private let concealed = NSHashTable<AnyObject>.weakObjects()
+    private let loadingObservations = NSMapTable<WKWebView, NSKeyValueObservation>.weakToStrongObjects()
     /// The pages open now and the address each shows: every web view the check is installed in. Tests replace it.
     var openPages: () -> [(page: AnyObject, url: URL)]
     /// Replaces `page` with the blocked page. Tests replace it.
     var showBlocked: (AnyObject, URL, String) -> Void
+    /// Hides `page` from view and touch, or shows it again. Tests replace it.
+    var setPageConcealed: (AnyObject, Bool) -> Void
+    /// Tells the script in `page` to stop checking and show it. Tests replace it.
+    var stopScript: (AnyObject) -> Void
 
     init(allowlist: Allowlist, classifier: PageClassifying) {
         self.allowlist = allowlist
@@ -71,6 +86,20 @@ public final class PageCheck: NSObject {
             webView.stopLoading()
             allowlist.showBlockedPage(at: url, reason: reason, in: webView)
         }
+        setPageConcealed = { page, isConcealed in
+            #if canImport(UIKit)
+            guard let webView = page as? WKWebView else { return }
+            // Alpha rather than isHidden, so the page still lays out and runs its scripts.
+            webView.alpha = isConcealed ? 0 : 1
+            webView.isUserInteractionEnabled = !isConcealed
+            #endif
+        }
+        stopScript = { page in
+            (page as? WKWebView)?.evaluateJavaScript("if (globalThis.mirlumiPageCheckStop) mirlumiPageCheckStop();",
+                                                     in: nil,
+                                                     in: Self.world,
+                                                     completionHandler: nil)
+        }
         super.init()
         NotificationCenter.default.addObserver(
             forName: Allowlist.browsingModeDidChange, object: allowlist, queue: .main
@@ -87,26 +116,56 @@ public final class PageCheck: NSObject {
         controller.removeScriptMessageHandler(forName: Self.handlerName, contentWorld: Self.world)
         controller.addScriptMessageHandler(self, contentWorld: Self.world, name: Self.handlerName)
         webViews.add(webView)
+        if loadingObservations.object(forKey: webView) == nil {
+            let observation = webView.observe(\.isLoading, options: [.new]) { [weak self] webView, change in
+                guard change.newValue == false else { return }
+                MainActor.assumeIsolated { self?.loadingStopped(in: webView) }
+            }
+            loadingObservations.setObject(observation, forKey: webView)
+        }
         update(webView)
+    }
+
+    /// Whether `page` is kept from view until its check clears it.
+    func isConcealed(_ page: AnyObject) -> Bool { concealed.contains(page) }
+
+    /// The navigation policy let a main frame navigation to `url` in `page` through. A page that needs a check is
+    /// hidden from here, before anything of it can be painted, until its check clears it; any other page is shown.
+    func navigationPassed(to url: URL, in page: AnyObject) {
+        let needsCheck = allowlist.needsPageCheck(in: page, at: url)
+        conceal(page, needsCheck)
+        guard needsCheck, let webView = page as? WKWebView else { return }
+        // A navigation the browser cancels after the policy never loads, and leaves the page it came from.
+        Task { [weak self, weak webView] in
+            try? await Task.sleep(nanoseconds: 1_000_000_000)
+            guard let self, let webView, !webView.isLoading else { return }
+            self.loadingStopped(in: webView)
+        }
     }
 
     /// Starts a new document in `page`. Returns its number if it needs a check, or nil to show it. Either way, answers
     /// still due for an earlier document in the page become stale.
     func startDocument(in page: AnyObject, at url: URL) -> Int? {
         lastDocument += 1
-        documents.setObject(Document(id: lastDocument), forKey: page)
-        guard allowlist.needsPageCheck(in: page, at: url) else { return nil }
+        let needsCheck = allowlist.needsPageCheck(in: page, at: url)
+        documents.setObject(Document(id: lastDocument, url: url, cleared: !needsCheck), forKey: page)
+        conceal(page, needsCheck)
+        guard needsCheck else { return nil }
         classifier.prepare()
         return lastDocument
     }
 
     /// Checks revision `revision` of document `document` in `page`, at `url`, whose text is `text`, or nil if the page
-    /// couldn't be read.
+    /// couldn't be read. The page is hidden from view while it's checked, and shown only if this is still the latest
+    /// revision of the page's document when the classifier clears it.
     func check(_ text: PageText?, at url: URL, in page: AnyObject, document: Int, revision: Int) async -> Outcome {
         guard allowlist.checksPages,
               let current = documents.object(forKey: page), current.id == document, revision > current.revision
         else { return .stale }
         current.revision = revision
+        current.url = url
+        current.cleared = false
+        conceal(page, true)
         var verdict = PageVerdict.failed
         if let text {
             let classifier = classifier
@@ -116,8 +175,13 @@ public final class PageCheck: NSObject {
             return .stale
         }
         guard case .block(let blocked, let reason)? = allowlist.blockCheckedPage(url, in: page, verdict: verdict)
-        else { return .clear }
-        // The blocked page replaces the document, so nothing it still sends counts.
+        else {
+            current.cleared = true
+            conceal(page, false)
+            return .clear
+        }
+        // The blocked page replaces the document, so nothing it still sends counts. It stays hidden until the blocked
+        // page loads, which the navigation policy shows.
         documents.removeObject(forKey: page)
         if case .flagged = verdict {
             blockOtherPages(onSiteOf: page)
@@ -131,6 +195,7 @@ public final class PageCheck: NSObject {
         for (page, url) in openPages() where page !== flagged {
             guard case .block(let blocked, let reason)? = allowlist.blockIfFlagged(url, in: page) else { continue }
             documents.removeObject(forKey: page)
+            conceal(page, true)
             showBlocked(page, blocked, reason ?? Allowlist.uncheckedReason)
         }
     }
@@ -140,19 +205,58 @@ public final class PageCheck: NSObject {
         documents.removeAllObjects()
         for webView in webViews.allObjects {
             update(webView)
-            guard !allowlist.checksPages, let url = webView.url else { continue }
-            switch allowlist.revalidate(url, in: webView) {
-            case .block(let blocked, let reason):
-                webView.stopLoading()
-                allowlist.showBlockedPage(at: blocked, reason: reason, in: webView)
+        }
+        guard !allowlist.checksPages else { return }
+        var blocked: [AnyObject] = []
+        for (page, url) in openPages() {
+            switch allowlist.revalidate(url, in: page) {
+            case .block(let address, let reason):
+                // Kept hidden until the blocked page loads.
+                blocked.append(page)
+                conceal(page, true)
+                showBlocked(page, address, reason ?? Allowlist.uncheckedReason)
             case .pass:
-                webView.evaluateJavaScript("if (globalThis.mirlumiPageCheckStop) mirlumiPageCheckStop();",
-                                           in: nil,
-                                           in: Self.world,
-                                           completionHandler: nil)
+                stopScript(page)
             default:
                 break
             }
+        }
+        for page in concealed.allObjects where !blocked.contains(where: { $0 === page }) {
+            conceal(page, false)
+        }
+    }
+
+    private func conceal(_ page: AnyObject, _ isConcealed: Bool) {
+        guard isConcealed != concealed.contains(page) else { return }
+        if isConcealed {
+            concealed.add(page)
+        } else {
+            concealed.remove(page)
+        }
+        setPageConcealed(page, isConcealed)
+    }
+
+    /// A load ended, or never started. A document that was cleared, or needs no check, is shown; one still being
+    /// checked stays hidden until its answer. A document that needed a check but whose script never asked, such as a
+    /// file scripts don't run in, counts as unchecked once `timeout` has passed.
+    private func loadingStopped(in webView: WKWebView) {
+        guard isConcealed(webView) else { return }
+        guard let url = webView.url else { return conceal(webView, false) }
+        if let document = documents.object(forKey: webView), Allowlist.isSameDocument(document.url, url) {
+            if document.cleared { conceal(webView, false) }
+            return
+        }
+        guard allowlist.needsPageCheck(in: webView, at: url) else { return conceal(webView, false) }
+        Task { [weak self, weak webView] in
+            try? await Task.sleep(nanoseconds: UInt64((self?.timeout ?? PageCheck.timeout) * 1_000_000_000))
+            guard let self, let webView, self.isConcealed(webView), !webView.isLoading, webView.url == url,
+                  self.documents.object(forKey: webView).map({ !Allowlist.isSameDocument($0.url, url) }) ?? true,
+                  self.allowlist.needsPageCheck(in: webView, at: url),
+                  case .block(let blocked, let reason)? = self.allowlist.blockCheckedPage(url,
+                                                                                          in: webView,
+                                                                                          verdict: .failed)
+            else { return }
+            self.showBlocked(webView, blocked, reason ?? Allowlist.uncheckedReason)
         }
     }
 
@@ -331,7 +435,7 @@ public final class PageCheck: NSObject {
       const attributeCheck = () => {
         attributeTimer = 0;
         lastAttributeRead = Date.now();
-        if (stopped || timer) {
+        if (stopped) {
           return;
         }
         const page = read();
@@ -392,7 +496,7 @@ public final class PageCheck: NSObject {
         addEventListener("hashchange", () => changed(true));
       };
 
-      handler.postMessage({ type: "start" }).then(
+      const begin = () => handler.postMessage({ type: "start" }).then(
         (reply) => {
           if (stopped || !reply) {
             return;
@@ -402,7 +506,9 @@ public final class PageCheck: NSObject {
             return;
           }
           documentId = reply.document;
-          if (document.readyState === "loading") {
+          if (watching) {
+            send(read());
+          } else if (document.readyState === "loading") {
             document.addEventListener("DOMContentLoaded", watch, { once: true });
             parsingTimer = setTimeout(watch, \(Int(timeout * 1000)));
           } else {
@@ -411,6 +517,15 @@ public final class PageCheck: NSObject {
         },
         () => {}
       );
+      begin();
+      // A page restored from the back-forward cache doesn't run this script again, but native counts it as a new
+      // document, which has to be checked before it's shown.
+      addEventListener("pageshow", (event) => {
+        if (event.persisted && !stopped) {
+          hide();
+          begin();
+        }
+      });
     })();
     """
 }

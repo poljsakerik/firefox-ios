@@ -39,25 +39,38 @@ final class PageCheckTests: XCTestCase {
         }
     }
 
-    private actor GatedClassifier: PageClassifying {
-        private var pending: [CheckedContinuation<PageVerdict, Never>] = []
-        private var arrivals: [Int: CheckedContinuation<Void, Never>] = [:]
-        nonisolated func prepare() {}
-        func checkPage(_ page: PageText) async -> PageVerdict {
+    /// Holds each check until the test answers it, and tells the test when one arrives.
+    private final class GatedClassifier: PageClassifying, @unchecked Sendable {
+        private let lock = NSLock()
+        private var waiting: [CheckedContinuation<PageVerdict, Never>] = []
+        private let arrived: AsyncStream<Void>.Continuation
+        let arrivals: AsyncStream<Void>
+
+        init() {
+            var arrived: AsyncStream<Void>.Continuation?
+            arrivals = AsyncStream { arrived = $0 }
+            self.arrived = arrived!
+        }
+
+        func prepare() {}
+        func checkPage(_ page: PageText) async -> PageVerdict { await hold() }
+        func checkSearch(_ query: String) async -> PageVerdict { await hold() }
+
+        /// Answers the check that arrived `index`th among those still waiting.
+        func answer(_ index: Int, with verdict: PageVerdict) {
+            lock.lock()
+            let continuation = waiting.remove(at: index)
+            lock.unlock()
+            continuation.resume(returning: verdict)
+        }
+
+        private func hold() async -> PageVerdict {
             await withCheckedContinuation { continuation in
-                pending.append(continuation)
-                arrivals.removeValue(forKey: pending.count)?.resume()
+                lock.lock()
+                waiting.append(continuation)
+                lock.unlock()
+                arrived.yield()
             }
-        }
-        func checkSearch(_ query: String) async -> PageVerdict { await checkPage(PageText()) }
-        func waitForCalls(_ count: Int) async {
-            if pending.count >= count { return }
-            await withCheckedContinuation { arrivals[count] = $0 }
-        }
-        func releaseAll() {
-            let answers = pending
-            pending.removeAll()
-            answers.forEach { $0.resume(returning: .clear) }
         }
     }
 
@@ -68,6 +81,16 @@ final class PageCheckTests: XCTestCase {
         allowlist.isEnabled = true
         allowlist.isOpenModeAvailable = true
         return allowlist
+    }
+
+    /// A page check whose classifier the test answers, with long timeouts so only the test decides.
+    private func gatedCheck(_ allowlist: Allowlist) -> (PageCheck, GatedClassifier) {
+        let classifier = GatedClassifier()
+        let check = PageCheck(allowlist: allowlist, classifier: classifier)
+        check.timeout = 60
+        check.setPageConcealed = { _, _ in }
+        check.stopScript = { _ in }
+        return (check, classifier)
     }
 
     private func realClassifier() -> PageClassifier {
@@ -328,38 +351,47 @@ final class PageCheckTests: XCTestCase {
         XCTAssertNil(check.startDocument(in: page, at: url("https://pbskids.org/")))
     }
 
-    func testAnAnswerForAnOlderRevisionIsIgnored() async throws {
+    func testAnAnswerForAnOlderRevisionIsIgnoredAndDoesntRevealThePage() async throws {
         let allowlist = openAllowlist()
-        let classifier = GatedClassifier()
-        let check = PageCheck(allowlist: allowlist, classifier: classifier)
+        let (check, classifier) = gatedCheck(allowlist)
+        var arrivals = classifier.arrivals.makeAsyncIterator()
         let address = url("https://example.com/app")
         let (page, document) = try checkedPage(address.absoluteString, in: check, allowlist: allowlist)
+        XCTAssertTrue(check.isConcealed(page))
         let first = Task { await check.check(PageText(), at: address, in: page, document: document, revision: 1) }
-        await classifier.waitForCalls(1)
-        let second = Task { await check.check(recipe, at: address, in: page, document: document, revision: 2) }
-        await classifier.waitForCalls(2)
-        await classifier.releaseAll()
+        _ = await arrivals.next()
+        let second = Task { await check.check(self.recipe, at: address, in: page, document: document, revision: 2) }
+        _ = await arrivals.next()
+
+        classifier.answer(0, with: .clear)
         let firstOutcome = await first.value
-        let secondOutcome = await second.value
         XCTAssertEqual(firstOutcome, .stale)
+        XCTAssertTrue(check.isConcealed(page))
+
+        classifier.answer(0, with: .clear)
+        let secondOutcome = await second.value
         XCTAssertEqual(secondOutcome, .clear)
+        XCTAssertFalse(check.isConcealed(page))
+
         let replayed = await check.check(recipe, at: address, in: page, document: document, revision: 1)
         XCTAssertEqual(replayed, .stale)
+        XCTAssertFalse(check.isConcealed(page))
     }
 
     func testAnAnswerForAnOlderDocumentIsIgnored() async throws {
         let allowlist = openAllowlist()
-        let classifier = GatedClassifier()
-        let check = PageCheck(allowlist: allowlist, classifier: classifier)
+        let (check, classifier) = gatedCheck(allowlist)
+        var arrivals = classifier.arrivals.makeAsyncIterator()
         let address = url("https://example.com/")
         let (page, document) = try checkedPage(address.absoluteString, in: check, allowlist: allowlist)
-        let old = Task { await check.check(recipe, at: address, in: page, document: document, revision: 1) }
-        await classifier.waitForCalls(1)
+        let old = Task { await check.check(self.recipe, at: address, in: page, document: document, revision: 1) }
+        _ = await arrivals.next()
         let next = try XCTUnwrap(check.startDocument(in: page, at: address))
         XCTAssertNotEqual(next, document)
-        await classifier.releaseAll()
+        classifier.answer(0, with: .clear)
         let oldOutcome = await old.value
         XCTAssertEqual(oldOutcome, .stale)
+        XCTAssertTrue(check.isConcealed(page))
     }
 
     func testACheckThatTakesTooLongBlocksThePageAsUnchecked() async throws {
@@ -403,38 +435,44 @@ final class PageCheckTests: XCTestCase {
 
     func testFlaggingASiteBlocksItsOtherOpenPagesAndTheirPendingChecks() async throws {
         let allowlist = openAllowlist()
-        let check = PageCheck(allowlist: allowlist, classifier: FakeClassifier(.clear, after: 0.2))
+        let (check, classifier) = gatedCheck(allowlist)
+        var arrivals = classifier.arrivals.makeAsyncIterator()
+        let flaggedAddress = url("https://www.casino.example/slots")
         let other = url("https://casino.example/live")
         let reader = url("readermode://app/page?url=https%3A%2F%2Fwww.casino.example%2Fstory")
         let unrelated = url("https://example.com/")
+        let (pageA, documentA) = try checkedPage(flaggedAddress.absoluteString, in: check, allowlist: allowlist)
         let (pageB, documentB) = try checkedPage(other.absoluteString, in: check, allowlist: allowlist)
         let pageC = Page()
         _ = allowlist.decide(reader, in: pageC, isMainFrame: true, isLoad: false, source: nil)
         let (pageD, _) = try checkedPage(unrelated.absoluteString, in: check, allowlist: allowlist)
         var shown: [(AnyObject, URL, String)] = []
-        check.openPages = { [(pageB, other), (pageC, reader), (pageD, unrelated)] }
+        check.openPages = { [(pageA, flaggedAddress), (pageB, other), (pageC, reader), (pageD, unrelated)] }
         check.showBlocked = { shown.append(($0, $1, $2)) }
 
-        // B's check is under way, and would come back clear.
+        // B's check reaches the classifier first and waits there.
         let pendingB = Task { await check.check(self.recipe, at: other, in: pageB, document: documentB, revision: 1) }
-        try await Task.sleep(nanoseconds: 50_000_000)
+        _ = await arrivals.next()
+        let checkA = Task {
+            await check.check(self.casino, at: flaggedAddress, in: pageA, document: documentA, revision: 1)
+        }
+        _ = await arrivals.next()
+        classifier.answer(1, with: .flagged("gambling"))
+        let outcomeA = await checkA.value
+        XCTAssertEqual(outcomeA, .block(flaggedAddress, reason: "gambling"))
 
-        let flagging = PageCheck(allowlist: allowlist, classifier: FakeClassifier(.flagged("gambling")))
-        flagging.openPages = check.openPages
-        flagging.showBlocked = check.showBlocked
-        let (pageA, documentA) = try checkedPage("https://www.casino.example/slots", in: flagging,
-                                                 allowlist: allowlist)
-        let flagged = await flagging.check(casino, at: url("https://www.casino.example/slots"), in: pageA,
-                                           document: documentA, revision: 1)
-        XCTAssertEqual(flagged, .block(url("https://www.casino.example/slots"), reason: "gambling"))
-
-        // B, and the reader view of an article on the site, are blocked now; the unrelated page isn't.
+        // B, and the reader view of an article on the site, are blocked now; the unrelated page and A itself, which
+        // its own check blocks, aren't blocked here.
         XCTAssertEqual(shown.count, 2)
         XCTAssertTrue(shown.contains { $0.0 === pageB && $0.1 == other && $0.2 == "gambling" })
         XCTAssertTrue(shown.contains { $0.0 === pageC && $0.1 == url("https://www.casino.example/story") })
-        XCTAssertFalse(shown.contains { $0.0 === pageD })
+        XCTAssertTrue(check.isConcealed(pageB))
+
+        // B's answer comes back clear, for a document that no longer counts.
+        classifier.answer(0, with: .clear)
         let outcomeB = await pendingB.value
-        XCTAssertNotEqual(outcomeB, .clear)
+        XCTAssertEqual(outcomeB, .stale)
+        XCTAssertTrue(check.isConcealed(pageB))
     }
 
     func testAClearVerdictForAFlaggedSiteBlocks() {
@@ -454,24 +492,123 @@ final class PageCheckTests: XCTestCase {
 
     func testTurningOpenModeOffRevalidatesPagesAndDropsPendingAnswers() async throws {
         let allowlist = openAllowlist()
-        let classifier = GatedClassifier()
-        let check = PageCheck(allowlist: allowlist, classifier: classifier)
+        let (check, classifier) = gatedCheck(allowlist)
+        var arrivals = classifier.arrivals.makeAsyncIterator()
         let address = url("https://example.com/")
+        let listedAddress = url("https://pbskids.org/")
         let (page, document) = try checkedPage(address.absoluteString, in: check, allowlist: allowlist)
-        let pending = Task { await check.check(recipe, at: address, in: page, document: document, revision: 1) }
-        await classifier.waitForCalls(1)
+        let listed = Page()
+        _ = allowlist.decide(listedAddress, in: listed, isMainFrame: true, isLoad: false, source: nil)
+        var shown: [(AnyObject, URL, String?)] = []
+        var stopped: [AnyObject] = []
+        check.openPages = { [(page, address), (listed, listedAddress)] }
+        check.showBlocked = { shown.append(($0, $1, $2)) }
+        check.stopScript = { stopped.append($0) }
+        let pending = Task { await check.check(self.recipe, at: address, in: page, document: document, revision: 1) }
+        _ = await arrivals.next()
+
+        // The notification runs the page check's revalidation at once, on the main actor.
         allowlist.browsingMode = .allowlist
-        await classifier.releaseAll()
+        // The unlisted page is replaced by the blocked page, and stays hidden until it loads; the listed one is shown.
+        XCTAssertEqual(shown.count, 1)
+        XCTAssertTrue(shown[0].0 === page && shown[0].1 == address)
+        XCTAssertTrue(check.isConcealed(page))
+        XCTAssertTrue(stopped.contains { $0 === listed })
+
+        classifier.answer(0, with: .clear)
         let outcome = await pending.value
         XCTAssertEqual(outcome, .stale)
+        XCTAssertTrue(check.isConcealed(page))
 
-        XCTAssertEqual(allowlist.revalidate(address, in: page), .block(address))
-        // The blocked page that replaces it stays, and so does an allowed page.
-        _ = allowlist.decide(address, in: page, isMainFrame: true, isLoad: true, source: nil)
+        // The blocked page loads through the navigation policy, which shows it.
+        XCTAssertEqual(allowlist.decide(address, in: page, isMainFrame: true, isLoad: true, source: nil), .pass)
+        check.navigationPassed(to: address, in: page)
+        XCTAssertFalse(check.isConcealed(page))
         XCTAssertEqual(allowlist.revalidate(address, in: page), .pass)
-        let listed = Page()
-        _ = allowlist.decide(url("https://pbskids.org/"), in: listed, isMainFrame: true, isLoad: false, source: nil)
-        XCTAssertEqual(allowlist.revalidate(url("https://pbskids.org/"), in: listed), .pass)
+    }
+
+    func testTurningOpenModeOffShowsEveryConcealedPage() throws {
+        let allowlist = openAllowlist()
+        let (check, _) = gatedCheck(allowlist)
+        let (page, _) = try checkedPage("https://example.com/", in: check, allowlist: allowlist)
+        XCTAssertTrue(check.isConcealed(page))
+        // A page the check no longer knows the address of isn't left hidden.
+        check.openPages = { [] }
+        // The notification runs the page check's revalidation at once, on the main actor.
+        allowlist.browsingMode = .allowlist
+        XCTAssertFalse(check.isConcealed(page))
+    }
+
+    // MARK: Native concealment
+
+    func testAPageThatNeedsACheckIsConcealedFromItsNavigation() throws {
+        let allowlist = openAllowlist()
+        let (check, _) = gatedCheck(allowlist)
+        var states: [Bool] = []
+        check.setPageConcealed = { _, concealed in states.append(concealed) }
+        let page = Page()
+        let address = url("https://example.com/")
+        XCTAssertEqual(allowlist.decide(address, in: page, isMainFrame: true, isLoad: false, source: nil), .pass)
+        check.navigationPassed(to: address, in: page)
+        XCTAssertTrue(check.isConcealed(page))
+        XCTAssertNotNil(check.startDocument(in: page, at: address))
+        XCTAssertTrue(check.isConcealed(page))
+        XCTAssertEqual(states, [true])
+    }
+
+    func testACurrentClearRevealsAndARecheckConcealsAgain() async throws {
+        let allowlist = openAllowlist()
+        let (check, classifier) = gatedCheck(allowlist)
+        var arrivals = classifier.arrivals.makeAsyncIterator()
+        let address = url("https://example.com/")
+        let (page, document) = try checkedPage(address.absoluteString, in: check, allowlist: allowlist)
+        let first = Task { await check.check(self.recipe, at: address, in: page, document: document, revision: 1) }
+        _ = await arrivals.next()
+        XCTAssertTrue(check.isConcealed(page))
+        classifier.answer(0, with: .clear)
+        let firstOutcome = await first.value
+        XCTAssertEqual(firstOutcome, .clear)
+        XCTAssertFalse(check.isConcealed(page))
+
+        // The page changed in place: hidden again the moment the recheck arrives.
+        let recheck = Task { await check.check(self.recipe, at: address, in: page, document: document, revision: 2) }
+        _ = await arrivals.next()
+        XCTAssertTrue(check.isConcealed(page))
+        classifier.answer(0, with: .clear)
+        let recheckOutcome = await recheck.value
+        XCTAssertEqual(recheckOutcome, .clear)
+        XCTAssertFalse(check.isConcealed(page))
+    }
+
+    func testTheBlockedPageAndAllowedPagesAreShown() async throws {
+        let allowlist = openAllowlist()
+        let (check, classifier) = gatedCheck(allowlist)
+        var arrivals = classifier.arrivals.makeAsyncIterator()
+        let address = url("https://casino.example/")
+        let (page, document) = try checkedPage(address.absoluteString, in: check, allowlist: allowlist)
+        let flagged = Task { await check.check(self.casino, at: address, in: page, document: document, revision: 1) }
+        _ = await arrivals.next()
+        classifier.answer(0, with: .flagged("gambling"))
+        let outcome = await flagged.value
+        XCTAssertEqual(outcome, .block(address, reason: "gambling"))
+        XCTAssertTrue(check.isConcealed(page))
+
+        // The blocked page's own load, and its script's start, show it.
+        XCTAssertEqual(allowlist.decide(address, in: page, isMainFrame: true, isLoad: true, source: nil), .pass)
+        check.navigationPassed(to: address, in: page)
+        XCTAssertFalse(check.isConcealed(page))
+        XCTAssertNil(check.startDocument(in: page, at: address))
+        XCTAssertFalse(check.isConcealed(page))
+
+        // Moving on to an allowed page from a page being checked shows it.
+        let (other, _) = try checkedPage("https://example.com/", in: check, allowlist: allowlist)
+        XCTAssertTrue(check.isConcealed(other))
+        let listed = url("https://pbskids.org/games")
+        XCTAssertEqual(allowlist.decide(listed, in: other, isMainFrame: true, isLoad: false, source: nil), .pass)
+        check.navigationPassed(to: listed, in: other)
+        XCTAssertFalse(check.isConcealed(other))
+        XCTAssertNil(check.startDocument(in: other, at: listed))
+        XCTAssertFalse(check.isConcealed(other))
     }
 
     // MARK: The classifier

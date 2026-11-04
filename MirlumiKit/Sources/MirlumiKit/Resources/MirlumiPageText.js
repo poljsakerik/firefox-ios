@@ -40,11 +40,15 @@ var MirlumiPageText = (function () {
     };
   }
 
-  // Text is compared in chunks of this many characters. A change counts once at least CHANGED_CHUNKS chunks differ, or
-  // the length moved by MIN_LENGTH_CHANGE.
+  // Text is compared in chunks of this many characters. A change counts once at least CHANGED_CHUNKS chunks differ, the
+  // length moved by MIN_LENGTH_CHANGE, or the body has NEW_WORDS words it didn't have before. The last catches a short
+  // page whose whole text is replaced within one chunk; a ticking clock or a counter adds only a word or two.
   const CHUNK_CHARS = 500;
   const CHANGED_CHUNKS = 2;
   const MIN_LENGTH_CHANGE = 200;
+  const NEW_WORDS = 6;
+
+  const WORD = /[\p{L}\p{N}]+/gu;
 
   function chunkHash(text, start) {
     let hash = 2166136261;
@@ -55,13 +59,14 @@ var MirlumiPageText = (function () {
     return hash >>> 0;
   }
 
-  // What changedEnough compares: the address, the title, and the body's length and chunk hashes.
+  // What changedEnough compares: the address, the title, and the body's length, chunk hashes and words.
   function pageState(address, page) {
     const chunks = [];
     for (let start = 0; start < page.body.length; start += CHUNK_CHARS) {
       chunks.push(chunkHash(page.body, start));
     }
-    return { address: String(address), title: page.title, length: page.body.length, chunks };
+    const words = new Set(page.body.toLowerCase().match(WORD) || []);
+    return { address: String(address), title: page.title, length: page.body.length, chunks, words };
   }
 
   // Whether a page went from state `before` to `after` by enough to be checked again. No `before` means it was never
@@ -72,6 +77,12 @@ var MirlumiPageText = (function () {
     }
     if (Math.abs(after.length - before.length) >= MIN_LENGTH_CHANGE) {
       return true;
+    }
+    let newWords = 0;
+    for (const word of after.words) {
+      if (!before.words.has(word) && ++newWords >= NEW_WORDS) {
+        return true;
+      }
     }
     let changed = Math.abs(after.chunks.length - before.chunks.length);
     for (let i = 0; i < Math.min(before.chunks.length, after.chunks.length); i++) {
@@ -113,5 +124,5 @@ var MirlumiPageText = (function () {
     return length;
   }
 
-  return { MAX_BODY_CHARS, readPage, CHUNK_CHARS, CHANGED_CHUNKS, MIN_LENGTH_CHANGE, pageState, changedEnough, textAdded, attributeText };
+  return { MAX_BODY_CHARS, readPage, CHUNK_CHARS, CHANGED_CHUNKS, MIN_LENGTH_CHANGE, NEW_WORDS, pageState, changedEnough, textAdded, attributeText };
 })();

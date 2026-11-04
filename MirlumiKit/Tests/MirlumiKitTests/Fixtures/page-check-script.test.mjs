@@ -231,3 +231,21 @@ test('a class change on the body with unchanged text keeps the page shown', asyn
   assert.equal(f.hidden(), false);
   assert.equal(f.requests.length, 1);
 });
+
+test('a pending settle timer does not delay a large revealed passage', async () => {
+  const f = fixture();
+  await flush();
+  await clear(f, 0);
+  // A small text change: the page stays shown and a settle check is scheduled.
+  f.mutate({ textContent: 'x' }, 'characterData');
+  assert.equal(f.hidden(), false);
+  assert.equal([...f.timers.values()].some((timer) => timer.delay === 300), true);
+  // An attribute change revealing a large passage is read and hidden at once, not after the settle timer.
+  const reads = f.reads();
+  f.setPage('risky '.repeat(200));
+  f.mutate({ textContent: 'x'.repeat(250) });
+  assert.equal(f.reads(), reads + 1);
+  assert.equal(f.hidden(), true);
+  f.fire(300);
+  assert.equal(f.requests.length, 2);
+});
