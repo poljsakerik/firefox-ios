@@ -43,6 +43,9 @@ public final class PageCheck: NSObject {
         var url: URL
         /// Whether its latest revision was cleared, or it needed no check.
         var cleared: Bool
+        /// The latest revision when the script last hid the page for a change: clearing it, or an earlier one, no
+        /// longer shows the page.
+        var hiddenRevision = 0
         init(id: Int, url: URL, cleared: Bool) {
             self.id = id
             self.url = url
@@ -155,6 +158,15 @@ public final class PageCheck: NSObject {
         return lastDocument
     }
 
+    /// The script hid document `document` in `page` for a change: it's concealed now, and only a clear verdict for a
+    /// later revision shows it again. Messages from an earlier document are ignored.
+    func pageHidden(in page: AnyObject, document: Int) {
+        guard allowlist.checksPages, let current = documents.object(forKey: page), current.id == document else { return }
+        current.cleared = false
+        current.hiddenRevision = current.revision
+        conceal(page, true)
+    }
+
     /// Checks revision `revision` of document `document` in `page`, at `url`, whose text is `text`, or nil if the page
     /// couldn't be read. The page is hidden from view while it's checked, and shown only if this is still the latest
     /// revision of the page's document when the classifier clears it.
@@ -176,6 +188,7 @@ public final class PageCheck: NSObject {
         }
         guard case .block(let blocked, let reason)? = allowlist.blockCheckedPage(url, in: page, verdict: verdict)
         else {
+            guard revision > current.hiddenRevision else { return .stale }
             current.cleared = true
             conceal(page, false)
             return .clear
@@ -286,13 +299,42 @@ public final class PageCheck: NSObject {
         return;
       }
       // An isolated world keeps this script's variables from the page, not the DOM: the gate is an element in the
-      // page's own tree, which its scripts can remove, edit or override. While the page should be hidden, a guard puts
-      // it back the moment they do, before anything is painted.
+      // page's own tree, which its scripts can remove, edit or override, and its style sheet can be changed through
+      // the CSSOM without any DOM mutation. While the page should be hidden, the gate is repaired whenever a mutation
+      // is seen, whenever the page changes, before it's read, and before every frame. Native concealment is what
+      // holds: the web view itself is hidden whenever a check is due. The gap left is between an in-page hide and
+      // native hearing of it, a message's trip of a few milliseconds.
       const GATE = ":root:root:root:root{opacity:0 !important;pointer-events:none !important}";
       const style = document.createElement("style");
       style.textContent = GATE;
       let gated = false;
       let stopped = false;
+      let gateRule = null;
+      let frame = 0;
+      const repairSheet = () => {
+        const sheet = style.sheet;
+        if (!sheet) {
+          return;
+        }
+        if (sheet.disabled) {
+          sheet.disabled = false;
+        }
+        try {
+          const rules = sheet.cssRules;
+          if (gateRule === null && rules.length === 1) {
+            gateRule = rules[0].cssText;
+          }
+          if (rules.length !== 1 || rules[0].cssText !== gateRule) {
+            while (sheet.cssRules.length > 0) {
+              sheet.deleteRule(0);
+            }
+            sheet.insertRule(GATE, 0);
+          }
+        } catch (e) {
+          style.textContent = "";
+          style.textContent = GATE;
+        }
+      };
       const restore = () => {
         const parent = document.documentElement || root;
         if (style.disabled) {
@@ -304,6 +346,7 @@ public final class PageCheck: NSObject {
         if (style.parentNode !== parent) {
           parent.appendChild(style);
         }
+        repairSheet();
         const inline = parent.style;
         if (inline) {
           for (const property of ["opacity", "visibility", "display"]) {
@@ -313,12 +356,27 @@ public final class PageCheck: NSObject {
           }
         }
       };
+      const keepGate = () => {
+        frame = 0;
+        if (stopped || !gated) {
+          return;
+        }
+        restore();
+        frame = requestAnimationFrame(keepGate);
+      };
       const hide = () => {
         gated = true;
         restore();
+        if (!frame && typeof requestAnimationFrame === "function") {
+          frame = requestAnimationFrame(keepGate);
+        }
       };
       const show = () => {
         gated = false;
+        if (frame) {
+          cancelAnimationFrame(frame);
+          frame = 0;
+        }
         style.remove();
       };
       const guard = new MutationObserver(() => {
@@ -405,8 +463,12 @@ public final class PageCheck: NSObject {
         if (stopped) {
           return;
         }
+        if (gated) {
+          restore();
+        }
         const page = read();
-        if (!page || text.changedEnough(sent, text.pageState(location.href, page))) {
+        // Once native was told the page is hidden for a change, only a new check shows it, even if the text went back.
+        if (hiddenForChange || !page || text.changedEnough(sent, text.pageState(location.href, page))) {
           send(page);
           return;
         }
@@ -422,8 +484,14 @@ public final class PageCheck: NSObject {
           return;
         }
         if (hideNow) {
-          hiddenForChange = true;
           hide();
+          if (!hiddenForChange) {
+            hiddenForChange = true;
+            // Native conceals the web view at once, and shows it again only for a later revision's clear verdict.
+            handler.postMessage({ type: "hidden", document: documentId, revision }).then(() => {}, () => {});
+          }
+        } else if (gated) {
+          restore();
         }
         if (!timer) {
           timer = setTimeout(settle, SETTLE_MS);
@@ -471,6 +539,9 @@ public final class PageCheck: NSObject {
             const nodes = [...record.addedNodes, ...record.removedNodes];
             return nodes.length === 0 || !nodes.every((node) => node === style);
           });
+          if (gated) {
+            restore();
+          }
           if (theirs.length === 0) {
             return;
           }
@@ -557,6 +628,11 @@ extension PageCheck: WKScriptMessageHandlerWithReply {
             } else {
                 replyHandler(["check": false], nil)
             }
+        case "hidden":
+            if let document = body["document"] as? Int {
+                pageHidden(in: webView, document: document)
+            }
+            replyHandler(nil, nil)
         case "page":
             guard let document = body["document"] as? Int, let revision = body["revision"] as? Int else {
                 return replyHandler(nil, nil)

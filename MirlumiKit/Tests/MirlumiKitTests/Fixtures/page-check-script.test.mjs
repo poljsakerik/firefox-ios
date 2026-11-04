@@ -19,6 +19,9 @@ function fixture(loading = false) {
   const timers = new Map();
   const events = {};
   const requests = [];
+  const hiddenMessages = [];
+  const frames = new Map();
+  let nextFrame = 0;
   let nextTimer = 0;
   let reads = 0;
   const inline = new Map();
@@ -33,7 +36,20 @@ function fixture(loading = false) {
   const document = {
     documentElement: root, readyState: loading ? 'loading' : 'complete',
     createElement() {
-      style = { parentNode: null, textContent: '', disabled: false, remove() { this.parentNode = null; } };
+      // The sheet exists while the element is in the document, as in a browser.
+      const sheet = {
+        disabled: false,
+        cssRules: [],
+        deleteRule(index) { this.cssRules.splice(index, 1); },
+        insertRule(rule, index) { this.cssRules.splice(index, 0, { cssText: rule }); return index; }
+      };
+      style = {
+        parentNode: null, disabled: false, _text: '',
+        get textContent() { return this._text; },
+        set textContent(value) { this._text = value; sheet.cssRules = value ? [{ cssText: value }] : []; },
+        get sheet() { return this.parentNode ? sheet : null; },
+        remove() { this.parentNode = null; }
+      };
       return style;
     },
     addEventListener(name, callback) { events[name] = callback; }
@@ -42,6 +58,8 @@ function fixture(loading = false) {
     document, location: { href: 'https://example.com/' }, addEventListener() {},
     setTimeout(callback, delay) { timers.set(++nextTimer, { callback, delay }); return nextTimer; },
     clearTimeout(id) { timers.delete(id); },
+    requestAnimationFrame(callback) { frames.set(++nextFrame, callback); return nextFrame; },
+    cancelAnimationFrame(id) { frames.delete(id); },
     MutationObserver: class {
       constructor(callback) { this.callback = callback; this.targets = []; observer = this; observers.push(this); }
       observe(target, options) { this.targets.push(target); this.options = options; }
@@ -59,13 +77,21 @@ function fixture(loading = false) {
     window: { webkit: { messageHandlers: { mirlumiPageCheck: {
       postMessage(message) {
         if (message.type === 'start') return Promise.resolve({ check: true, document: 1 });
+        if (message.type === 'hidden') { hiddenMessages.push(message); return Promise.resolve(); }
         return new Promise(resolve => requests.push({ message, resolve }));
       }
     } } } }
   };
   vm.runInNewContext(script, context);
   return {
-    requests, events, timers,
+    requests, events, timers, hiddenMessages, frames,
+    sheet: () => style.sheet,
+    // Runs the frame callbacks due, as the browser does before painting.
+    frame() {
+      const due = [...frames.values()];
+      frames.clear();
+      due.forEach((callback) => callback());
+    },
     reads: () => reads,
     hidden: () => !!style.parentNode,
     observer: () => observer,
@@ -248,4 +274,67 @@ test('a pending settle timer does not delay a large revealed passage', async () 
   assert.equal(f.hidden(), true);
   f.fire(300);
   assert.equal(f.requests.length, 2);
+});
+
+test('a gate rule deleted, edited or disabled through the CSSOM is repaired before the next frame', async () => {
+  const f = fixture();
+  await flush();
+  assert.equal(f.hidden(), true);
+  assert.deepEqual(f.sheet().cssRules.map((rule) => rule.cssText), [GATE]);
+  // No DOM mutation reports these; the frame check finds them.
+  f.sheet().deleteRule(0);
+  f.frame();
+  assert.deepEqual(f.sheet().cssRules.map((rule) => rule.cssText), [GATE]);
+  f.sheet().disabled = true;
+  f.frame();
+  assert.equal(f.sheet().disabled, false);
+  f.sheet().cssRules[0] = { cssText: ':root:root:root:root { opacity: 1 }' };
+  f.sheet().insertRule('html { opacity: 1 !important }', 1);
+  f.frame();
+  assert.deepEqual(f.sheet().cssRules.map((rule) => rule.cssText), [GATE]);
+});
+
+test('the gate is also repaired on any mutation, and the frame check stops once the page is cleared', async () => {
+  const f = fixture();
+  await flush();
+  f.sheet().deleteRule(0);
+  f.observer().callback([{ type: 'childList', target: f.root, addedNodes: [], removedNodes: [] }]);
+  assert.deepEqual(f.sheet().cssRules.map((rule) => rule.cssText), [GATE]);
+  await clear(f, 0);
+  assert.equal(f.hidden(), false);
+  assert.equal(f.frames.size, 0);
+});
+
+test('hiding for a change tells native at once, and only a new check shows the page again', async () => {
+  const f = fixture();
+  await flush();
+  await clear(f, 0);
+  assert.equal(f.hiddenMessages.length, 0);
+  f.setPage('risky '.repeat(200));
+  f.mutate();
+  assert.equal(f.hidden(), true);
+  assert.deepEqual(JSON.parse(JSON.stringify(f.hiddenMessages)), [{ type: 'hidden', document: 1, revision: 1 }]);
+  assert.equal(f.frames.size, 1);
+  // The page deletes the gate rule, then puts its old text back before the settle check reads it.
+  f.sheet().deleteRule(0);
+  f.setPage('safe');
+  f.fire(300);
+  assert.deepEqual(f.sheet().cssRules.map((rule) => rule.cssText), [GATE]);
+  assert.equal(f.hidden(), true);
+  assert.equal(f.requests.length, 2);
+  assert.equal(f.requests[1].message.revision, 2);
+  assert.equal(f.hiddenMessages.length, 1);
+  await clear(f, 1);
+  assert.equal(f.hidden(), false);
+});
+
+test('a small change that does not hide sends no hidden message and keeps the page shown', async () => {
+  const f = fixture();
+  await flush();
+  await clear(f, 0);
+  f.mutate({ textContent: 'x' }, 'characterData');
+  f.fire(300);
+  assert.equal(f.hiddenMessages.length, 0);
+  assert.equal(f.hidden(), false);
+  assert.equal(f.requests.length, 1);
 });
