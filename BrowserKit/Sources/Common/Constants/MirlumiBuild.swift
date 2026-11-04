@@ -27,4 +27,6 @@ public enum MirlumiBuild {
     public static let allowlistEnabled = true
     /// Content rules hide and block short-form video and app prompts on the sites they name.
     public static let contentRulesEnabled = true
+    /// Images stay hidden until they're checked, and explicit ones are replaced by a placeholder.
+    public static let imageCheckEnabled = true
 }

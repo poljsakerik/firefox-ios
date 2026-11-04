@@ -407,7 +407,7 @@ extension BrowserViewController: WKUIDelegate {
             actionBuilder.addBookmarkLink(url: url, title: title, addBookmark: self.addBookmark)
         }
 
-        if !isJavascriptScheme {
+        if !isJavascriptScheme && ImageCheck.shared.allowsDownloadLink(hasImage: image != nil) {
             actionBuilder.addDownload(url: url, currentTab: currentTab, assignWebView: assignWebView)
         }
 
@@ -425,11 +425,13 @@ extension BrowserViewController: WKUIDelegate {
                 actionBuilder.addSearchWithGoogleLens(url: url, searchGoogleLens: searchGoogleLens(forImageURL:))
             }
 
-            actionBuilder.addSaveImage(url: url,
-                                       getImageData: getImageData,
-                                       writeToPhotoAlbum: writeToPhotoAlbum)
+            if ImageCheck.shared.allowsSavingImages {
+                actionBuilder.addSaveImage(url: url,
+                                           getImageData: getImageData,
+                                           writeToPhotoAlbum: writeToPhotoAlbum)
 
-            actionBuilder.addCopyImage(url: url)
+                actionBuilder.addCopyImage(url: url)
+            }
 
             actionBuilder.addCopyImageLink(url: url)
         }
@@ -1013,6 +1015,7 @@ extension BrowserViewController: WKNavigationDelegate {
             downloadHelper.shouldDownloadFile(canShowInWebView: canShowInWebView,
                                               forceDownload: forceDownload,
                                               isForMainFrame: navigationResponse.isForMainFrame) {
+            guard ImageCheck.shared.allowsFile(mimeType: response.mimeType) else { return .cancel }
             /// FXIOS-12201: Need to hold reference to downloadHelper,
             /// so we can use this later in `webView(_:navigationResponse:didBecome:)`
             self.downloadHelper = downloadHelper
@@ -1033,7 +1036,7 @@ extension BrowserViewController: WKNavigationDelegate {
                 handlePDFDownloadRequest(request: request, tab: tab, filename: response.suggestedFilename)
                 return .cancel
             }
-            if response.mimeType != MIMEType.HTML {
+            if response.mimeType != MIMEType.HTML, ImageCheck.shared.allowsFile(mimeType: response.mimeType) {
                 if webViewDocFetchEnabled {
                     // WebView fetch reads the document directly from the view, so no request is required.
                     tab.temporaryDocument = DefaultTemporaryDocument(preflightResponse: response)

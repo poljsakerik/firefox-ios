@@ -151,6 +151,9 @@ class UserScriptManager {
         if MirlumiBuild.contentRulesEnabled, let webView {
             ContentRules.shared.install(in: webView)
         }
+        if ImageCheck.shared.isEnabled, let webView {
+            ImageCheck.shared.install(in: webView)
+        }
         // If Night Mode is enabled, inject a small user script to ensure
         // that it gets enabled immediately when the DOM loads.
         if nightMode {
