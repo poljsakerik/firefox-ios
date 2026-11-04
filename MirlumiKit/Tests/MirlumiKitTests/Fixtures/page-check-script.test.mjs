@@ -20,6 +20,7 @@ function fixture(loading = false) {
   const events = {};
   const requests = [];
   const hiddenMessages = [];
+  const starts = [];
   const frames = new Map();
   let nextFrame = 0;
   let nextTimer = 0;
@@ -76,7 +77,7 @@ function fixture(loading = false) {
     },
     window: { webkit: { messageHandlers: { mirlumiPageCheck: {
       postMessage(message) {
-        if (message.type === 'start') return Promise.resolve({ check: true, document: 1 });
+        if (message.type === 'start') { starts.push(message); return Promise.resolve({ check: true, document: 1 }); }
         if (message.type === 'hidden') { hiddenMessages.push(message); return Promise.resolve(); }
         return new Promise(resolve => requests.push({ message, resolve }));
       }
@@ -84,7 +85,7 @@ function fixture(loading = false) {
   };
   vm.runInNewContext(script, context);
   return {
-    requests, events, timers, hiddenMessages, frames,
+    requests, events, timers, hiddenMessages, frames, starts,
     sheet: () => style.sheet,
     // Runs the frame callbacks due, as the browser does before painting.
     frame() {
@@ -313,7 +314,10 @@ test('hiding for a change tells native at once, and only a new check shows the p
   f.setPage('risky '.repeat(200));
   f.mutate();
   assert.equal(f.hidden(), true);
-  assert.deepEqual(JSON.parse(JSON.stringify(f.hiddenMessages)), [{ type: 'hidden', document: 1, revision: 1 }]);
+  const [hiddenMessage] = JSON.parse(JSON.stringify(f.hiddenMessages));
+  assert.equal(f.hiddenMessages.length, 1);
+  assert.match(hiddenMessage.frame, /^[0-9a-f]+$/);
+  assert.deepEqual({ ...hiddenMessage, frame: undefined }, { type: 'hidden', frame: undefined, document: 1, revision: 1 });
   assert.equal(f.frames.size, 1);
   // The page deletes the gate rule, then puts its old text back before the settle check reads it.
   f.sheet().deleteRule(0);
@@ -337,4 +341,18 @@ test('a small change that does not hide sends no hidden message and keeps the pa
   assert.equal(f.hiddenMessages.length, 0);
   assert.equal(f.hidden(), false);
   assert.equal(f.requests.length, 1);
+});
+
+test('every message names its frame by a token the frame picked, different in each frame', async () => {
+  const first = fixture();
+  const second = fixture();
+  await flush();
+  const token = first.starts[0].frame;
+  assert.match(token, /^[0-9a-f]{8,}$/);
+  assert.notEqual(second.starts[0].frame, token);
+  assert.equal(first.requests[0].message.frame, token);
+  await clear(first, 0);
+  first.setPage('risky '.repeat(200));
+  first.mutate();
+  assert.equal(first.hiddenMessages[0].frame, token);
 });

@@ -244,7 +244,8 @@ public final class Allowlist {
             guard let blocked = blockedAddresses.object(forKey: page) as URL?, source == blocked else { return .cancel }
             return .askToAllow(blocked)
         }
-        guard isMainFrame else { return .pass }
+        // A frame of a site flagged this session loads nothing in open mode. Other frames load, and are checked.
+        guard isMainFrame else { return checksPages && isFlaggedFrame(url) ? .cancel : .pass }
         let checked = checkedSearches.object(forKey: page) as URL?
         checkedSearches.removeObject(forKey: page)
         if let article = Self.readerArticle(of: url) {
@@ -304,6 +305,25 @@ public final class Allowlist {
 
     /// Whether the document at `url` in `page` waits for the page classifier before it's shown. Only open mode checks
     /// pages; there, a page the navigation policy didn't see is checked unless a list allows it.
+    /// Whether a frame's document at `frameURL`, in a page at `pageURL`, waits for the page classifier. A frame with an
+    /// http or https address is judged as its own site; any other, such as `about:srcdoc` or `about:blank`, with the
+    /// page that holds it. Only open mode checks frames.
+    func needsFrameCheck(at frameURL: URL?, inPageAt pageURL: URL?) -> Bool {
+        guard checksPages else { return false }
+        if let frameURL, Self.isWebAddress(frameURL) { return !allows(frameURL) }
+        return pageURL.map { !allows($0) } ?? true
+    }
+
+    /// Whether a frame's navigation to `url` goes to a site flagged this session that no list allows.
+    func isFlaggedFrame(_ url: URL) -> Bool {
+        Self.isWebAddress(url) && !allows(url) && flaggedLabel(of: url) != nil
+    }
+
+    static func isWebAddress(_ url: URL) -> Bool {
+        let scheme = url.scheme?.lowercased()
+        return scheme == "http" || scheme == "https"
+    }
+
     func needsPageCheck(in page: AnyObject, at url: URL) -> Bool {
         guard checksPages else { return false }
         if let mark = pageMarks.object(forKey: page), Self.isSameDocument(mark.url, url) { return mark.needsCheck }
@@ -369,7 +389,8 @@ public final class Allowlist {
         pageMarks.setObject(PageMark(url: url, needsCheck: needsCheck, isBlockedPage: isBlockedPage), forKey: page)
     }
 
-    private func flag(_ url: URL, label: String) {
+    /// Marks the site of `url` flagged for the session, as a page check that flagged it does.
+    func flag(_ url: URL, label: String) {
         guard let host = URLComponents(url: url, resolvingAgainstBaseURL: false).flatMap(Self.host(of:)),
               let entry = matcher?.entry(forHost: host)
         else { return }

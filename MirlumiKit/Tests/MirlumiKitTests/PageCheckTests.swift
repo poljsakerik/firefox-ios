@@ -679,6 +679,174 @@ final class PageCheckTests: XCTestCase {
         XCTAssertFalse(check.isConcealed(other))
     }
 
+    // MARK: Frames
+
+    func testFramesAreTrackedOnTheirOwnAndAnOlderFrameDocumentIsStale() async throws {
+        let allowlist = openAllowlist()
+        let (check, classifier) = gatedCheck(allowlist)
+        var arrivals = classifier.arrivals.makeAsyncIterator()
+        let address = url("https://garden.example/")
+        let frameAddress = url("https://widgets.example/clock")
+        let (page, main) = try checkedPage(address.absoluteString, in: check, allowlist: allowlist)
+        let mainCheck = Task { await check.check(self.recipe, at: address, in: page, document: main, revision: 1) }
+        _ = await arrivals.next()
+        classifier.answer(0, with: .clear)
+        let mainOutcome = await mainCheck.value
+        XCTAssertEqual(mainOutcome, .clear)
+
+        let frameKey = "https://widgets.example:0/abc"
+        let frame = try XCTUnwrap(check.startDocument(in: page, at: address, frame: frameKey, frameURL: frameAddress))
+        // A frame's check doesn't conceal the page around it: the frame's own gate hides the frame.
+        XCTAssertFalse(check.isConcealed(page))
+        let old = Task {
+            await check.check(self.recipe, at: address, in: page, document: frame, revision: 1, frame: frameKey,
+                              frameURL: frameAddress)
+        }
+        _ = await arrivals.next()
+        XCTAssertFalse(check.isConcealed(page))
+        // The frame navigates: its new document makes the old one's answer stale, and leaves the main frame alone.
+        let next = try XCTUnwrap(check.startDocument(in: page, at: address, frame: frameKey, frameURL: frameAddress))
+        classifier.answer(0, with: .clear)
+        let oldOutcome = await old.value
+        XCTAssertEqual(oldOutcome, .stale)
+
+        // Another frame's revisions don't touch this one's.
+        let otherKey = "https://widgets.example:0/def"
+        let other = try XCTUnwrap(check.startDocument(in: page, at: address, frame: otherKey, frameURL: frameAddress))
+        let current = Task {
+            await check.check(self.recipe, at: address, in: page, document: next, revision: 1, frame: frameKey,
+                              frameURL: frameAddress)
+        }
+        _ = await arrivals.next()
+        classifier.answer(0, with: .clear)
+        let currentOutcome = await current.value
+        XCTAssertEqual(currentOutcome, .clear)
+        XCTAssertNotEqual(other, next)
+
+        // A new main frame document makes every frame's answers stale.
+        let pending = Task {
+            await check.check(self.recipe, at: address, in: page, document: other, revision: 1, frame: otherKey,
+                              frameURL: frameAddress)
+        }
+        _ = await arrivals.next()
+        _ = check.startDocument(in: page, at: address)
+        classifier.answer(0, with: .clear)
+        let pendingOutcome = await pending.value
+        XCTAssertEqual(pendingOutcome, .stale)
+    }
+
+    func testFramesOfAllowedSitesAndAllowedPagesNeedNoCheck() {
+        let allowlist = openAllowlist()
+        let check = PageCheck(allowlist: allowlist, classifier: FakeClassifier(.clear))
+        let page = Page()
+        let listed = url("https://pbskids.org/")
+        _ = allowlist.decide(listed, in: page, isMainFrame: true, isLoad: false, source: nil)
+        XCTAssertNil(check.startDocument(in: page, at: listed))
+        // A frame of an allowed site, and a frame without an address of its own in an allowed page.
+        XCTAssertNil(check.startDocument(in: page, at: listed, frame: "a", frameURL: url("https://pbskids.org/game")))
+        XCTAssertNil(check.startDocument(in: page, at: listed, frame: "b", frameURL: url("about:srcdoc")))
+        // A frame of an unlisted site is checked, even in an allowed page.
+        XCTAssertNotNil(check.startDocument(in: page, at: listed, frame: "c", frameURL: url("https://ads.example/")))
+        XCTAssertFalse(check.isConcealed(page))
+        // Allowlist mode checks no frame.
+        allowlist.browsingMode = .allowlist
+        XCTAssertNil(check.startDocument(in: page, at: listed, frame: "d", frameURL: url("https://ads.example/")))
+    }
+
+    func testAFlaggedFrameStaysHiddenAndFlagsItsSiteButNotThePageAroundIt() async throws {
+        let allowlist = openAllowlist()
+        let (check, classifier) = gatedCheck(allowlist)
+        var arrivals = classifier.arrivals.makeAsyncIterator()
+        let garden = url("https://garden.example/")
+        let framed = url("https://casino.example/embed")
+        let (page, _) = try checkedPage(garden.absoluteString, in: check, allowlist: allowlist)
+        let casinoTab = Page()
+        let casinoPage = url("https://casino.example/")
+        _ = allowlist.decide(casinoPage, in: casinoTab, isMainFrame: true, isLoad: false, source: nil)
+        var shown: [(AnyObject, URL, String)] = []
+        check.openPages = { [(page, garden), (casinoTab, casinoPage)] }
+        check.showBlocked = { shown.append(($0, $1, $2)) }
+
+        let frame = try XCTUnwrap(check.startDocument(in: page, at: garden, frame: "f", frameURL: framed))
+        let flagged = Task {
+            await check.check(self.casino, at: garden, in: page, document: frame, revision: 1, frame: "f",
+                              frameURL: framed)
+        }
+        _ = await arrivals.next()
+        classifier.answer(0, with: .flagged("gambling"))
+        let outcome = await flagged.value
+        XCTAssertEqual(outcome, .hideFrame)
+        // The garden stays; the casino site's own page elsewhere is blocked.
+        XCTAssertEqual(shown.count, 1)
+        XCTAssertTrue(shown.first?.0 === casinoTab)
+        XCTAssertEqual(shown.first?.2, "gambling")
+
+        // From now on a frame of the casino site loads nothing in open mode, and a top-level visit is blocked.
+        XCTAssertEqual(allowlist.decide(url("https://www.casino.example/other"), in: page, isMainFrame: false,
+                                        isLoad: false, source: garden), .cancel)
+        XCTAssertEqual(allowlist.decide(url("https://ads.example/"), in: page, isMainFrame: false, isLoad: false,
+                                        source: garden), .pass)
+        XCTAssertEqual(allowlist.decide(casinoPage, in: Page(), isMainFrame: true, isLoad: false, source: nil),
+                       .block(casinoPage, reason: "gambling"))
+        // In allowlist mode, frames are left alone as before.
+        allowlist.browsingMode = .allowlist
+        XCTAssertEqual(allowlist.decide(url("https://casino.example/x"), in: page, isMainFrame: false, isLoad: false,
+                                        source: garden), .pass)
+    }
+
+    func testAFrameThatCouldntBeCheckedStaysHiddenWithoutBlockingThePage() async throws {
+        let allowlist = openAllowlist()
+        let (check, classifier) = gatedCheck(allowlist)
+        var arrivals = classifier.arrivals.makeAsyncIterator()
+        let garden = url("https://garden.example/")
+        let (page, _) = try checkedPage(garden.absoluteString, in: check, allowlist: allowlist)
+        for (key, address) in [("a", "https://slow.example/"), ("b", "about:srcdoc")] {
+            let frame = try XCTUnwrap(check.startDocument(in: page, at: garden, frame: key, frameURL: url(address)))
+            let failed = Task {
+                await check.check(self.recipe, at: garden, in: page, document: frame, revision: 1, frame: key,
+                                  frameURL: self.url(address))
+            }
+            _ = await arrivals.next()
+            classifier.answer(0, with: .failed)
+            let outcome = await failed.value
+            XCTAssertEqual(outcome, .hideFrame, address)
+        }
+        // The page's own next load is checked as usual: nothing marked it blocked.
+        XCTAssertEqual(allowlist.decide(garden, in: page, isMainFrame: true, isLoad: true, source: nil), .pass)
+        XCTAssertTrue(allowlist.needsPageCheck(in: page, at: garden))
+    }
+
+    func testAFlaggedSrcdocFrameBlocksThePageThatHoldsIt() async throws {
+        let allowlist = openAllowlist()
+        let (check, classifier) = gatedCheck(allowlist)
+        var arrivals = classifier.arrivals.makeAsyncIterator()
+        let address = url("https://harmless.example/")
+        let (page, main) = try checkedPage(address.absoluteString, in: check, allowlist: allowlist)
+        let mainCheck = Task { await check.check(self.recipe, at: address, in: page, document: main, revision: 1) }
+        _ = await arrivals.next()
+        classifier.answer(0, with: .clear)
+        _ = await mainCheck.value
+        XCTAssertFalse(check.isConcealed(page))
+
+        let frame = try XCTUnwrap(check.startDocument(in: page, at: address, frame: "s", frameURL: url("about:srcdoc")))
+        let flagged = Task {
+            await check.check(self.casino, at: address, in: page, document: frame, revision: 1, frame: "s",
+                              frameURL: self.url("about:srcdoc"))
+        }
+        _ = await arrivals.next()
+        classifier.answer(0, with: .flagged("gambling"))
+        let outcome = await flagged.value
+        XCTAssertEqual(outcome, .block(address, reason: "gambling"))
+        XCTAssertTrue(check.isConcealed(page))
+        // The page's site is flagged for the session.
+        XCTAssertEqual(allowlist.decide(url("https://harmless.example/other"), in: Page(), isMainFrame: true,
+                                        isLoad: false, source: nil),
+                       .block(url("https://harmless.example/other"), reason: "gambling"))
+        // Nothing the page or its frames still send counts.
+        let late = await check.check(recipe, at: address, in: page, document: main, revision: 2)
+        XCTAssertEqual(late, .stale)
+    }
+
     // MARK: The classifier
 
     func testTheClassifierFlagsGamblingAndPassesARecipe() async {

@@ -34,6 +34,17 @@ public final class PageCheck: NSObject {
         case block(URL, reason: String)
         /// An answer for an older document or revision, or from before the mode changed: change nothing.
         case stale
+        /// A frame that was flagged, or couldn't be checked: it stays hidden by its own gate.
+        case hideFrame
+    }
+
+    /// The main frame's key among a page's frames. A frame's own key is its security origin and the token its
+    /// script picked at random where the page can't read it: WebKit has no public identifier for a frame.
+    static let mainFrame = "main"
+
+    /// The documents of a page's frames, by frame key. A new main frame document drops them all.
+    private final class PageDocuments {
+        var frames: [String: Document] = [:]
     }
 
     private final class Document {
@@ -58,8 +69,8 @@ public final class PageCheck: NSObject {
     private let classifier: PageClassifying
     private let userScript: WKUserScript
     private let webViews = NSHashTable<WKWebView>.weakObjects()
-    /// The document each page shows, from its script's start.
-    private let documents = NSMapTable<AnyObject, Document>.weakToStrongObjects()
+    /// The documents each page shows, in its main frame and its other frames, from their scripts' start.
+    private let documents = NSMapTable<AnyObject, PageDocuments>.weakToStrongObjects()
     private var lastDocument = 0
     /// The pages kept from view natively until their check clears them.
     private let concealed = NSHashTable<AnyObject>.weakObjects()
@@ -80,7 +91,7 @@ public final class PageCheck: NSObject {
             .flatMap { try? String(contentsOf: $0, encoding: .utf8) } ?? ""
         userScript = WKUserScript(source: "\(pageText)\n\(Self.script)",
                                   injectionTime: .atDocumentStart,
-                                  forMainFrameOnly: true,
+                                  forMainFrameOnly: false,
                                   in: Self.world)
         let webViews = webViews
         openPages = { webViews.allObjects.compactMap { webView in webView.url.map { (webView, $0) } } }
@@ -146,65 +157,133 @@ public final class PageCheck: NSObject {
         }
     }
 
-    /// Starts a new document in `page`. Returns its number if it needs a check, or nil to show it. Either way, answers
-    /// still due for an earlier document in the page become stale.
-    func startDocument(in page: AnyObject, at url: URL) -> Int? {
+    private func document(in page: AnyObject, frame: String) -> Document? {
+        documents.object(forKey: page)?.frames[frame]
+    }
+
+    /// Starts a new document in `page`'s frame `frame`. Returns its number if it needs a check, or nil to show it.
+    /// Either way, answers still due for an earlier document in the frame become stale; a new main frame document
+    /// makes every frame's stale. `url` is the page's address, and `frameURL` a frame's own.
+    func startDocument(in page: AnyObject,
+                       at url: URL,
+                       frame: String = PageCheck.mainFrame,
+                       frameURL: URL? = nil) -> Int? {
         lastDocument += 1
-        let needsCheck = allowlist.needsPageCheck(in: page, at: url)
-        documents.setObject(Document(id: lastDocument, url: url, cleared: !needsCheck), forKey: page)
-        conceal(page, needsCheck)
+        let needsCheck: Bool
+        if frame == Self.mainFrame {
+            needsCheck = allowlist.needsPageCheck(in: page, at: url)
+            let frames = PageDocuments()
+            frames.frames[frame] = Document(id: lastDocument, url: url, cleared: !needsCheck)
+            documents.setObject(frames, forKey: page)
+            conceal(page, needsCheck)
+        } else {
+            // A frame is hidden by its own gate, not by concealing the web view, so a slow frame doesn't blank
+            // the page around it.
+            needsCheck = allowlist.needsFrameCheck(at: frameURL, inPageAt: url)
+            let frames = documents.object(forKey: page) ?? PageDocuments()
+            frames.frames[frame] = Document(id: lastDocument, url: frameURL ?? url, cleared: !needsCheck)
+            documents.setObject(frames, forKey: page)
+        }
         guard needsCheck else { return nil }
         classifier.prepare()
         return lastDocument
     }
 
-    /// The script hid document `document` in `page` for a change: it's concealed now, and only a clear verdict for a
-    /// later revision shows it again. Messages from an earlier document are ignored.
-    func pageHidden(in page: AnyObject, document: Int) {
-        guard allowlist.checksPages, let current = documents.object(forKey: page), current.id == document else { return }
+    /// The script hid document `document` in frame `frame` of `page` for a change: only a clear verdict for a later
+    /// revision shows it again, and a main frame is concealed now. Messages from an earlier document are ignored.
+    func pageHidden(in page: AnyObject, document: Int, frame: String = PageCheck.mainFrame) {
+        guard allowlist.checksPages, let current = self.document(in: page, frame: frame), current.id == document else {
+            return
+        }
         current.cleared = false
         current.hiddenRevision = current.revision
-        conceal(page, true)
+        if frame == Self.mainFrame {
+            conceal(page, true)
+        }
     }
 
-    /// Checks revision `revision` of document `document` in `page`, at `url`, whose text is `text`, or nil if the page
-    /// couldn't be read. The page is hidden from view while it's checked, and shown only if this is still the latest
-    /// revision of the page's document when the classifier clears it.
-    func check(_ text: PageText?, at url: URL, in page: AnyObject, document: Int, revision: Int) async -> Outcome {
+    /// Checks revision `revision` of document `document` in frame `frame` of `page`, at `url`, whose text is `text`,
+    /// or nil if the page couldn't be read. A main frame is hidden from view while it's checked, and shown only if
+    /// this is still the latest revision of its document when the classifier clears it. A frame keeps its own gate
+    /// until then; `frameURL` is its address.
+    func check(_ text: PageText?,
+               at url: URL,
+               in page: AnyObject,
+               document: Int,
+               revision: Int,
+               frame: String = PageCheck.mainFrame,
+               frameURL: URL? = nil) async -> Outcome {
+        let isMain = frame == Self.mainFrame
         guard allowlist.checksPages,
-              let current = documents.object(forKey: page), current.id == document, revision > current.revision
+              let current = self.document(in: page, frame: frame), current.id == document, revision > current.revision
         else { return .stale }
         current.revision = revision
-        current.url = url
         current.cleared = false
-        conceal(page, true)
+        if isMain {
+            current.url = url
+            conceal(page, true)
+        }
         var verdict = PageVerdict.failed
         if let text {
             let classifier = classifier
             verdict = await PageClassifier.first(within: timeout) { await classifier.checkPage(text) } ?? .failed
         }
-        guard allowlist.checksPages, documents.object(forKey: page) === current, current.revision == revision else {
-            return .stale
+        guard allowlist.checksPages, self.document(in: page, frame: frame) === current, current.revision == revision
+        else { return .stale }
+        if !isMain, let frameURL, Allowlist.isWebAddress(frameURL) {
+            return frameOutcome(verdict, at: frameURL, in: page, frame: frame, document: current)
         }
+        if !isMain, case .failed = verdict {
+            // A frame that couldn't be checked stays hidden; it doesn't block the page around it.
+            documents.object(forKey: page)?.frames[frame] = nil
+            return .hideFrame
+        }
+        // The main frame, or a frame without an address of its own, which is judged with the page that holds it.
         guard case .block(let blocked, let reason)? = allowlist.blockCheckedPage(url, in: page, verdict: verdict)
         else {
             guard revision > current.hiddenRevision else { return .stale }
             current.cleared = true
-            conceal(page, false)
+            if isMain {
+                conceal(page, false)
+            }
             return .clear
         }
-        // The blocked page replaces the document, so nothing it still sends counts. It stays hidden until the blocked
-        // page loads, which the navigation policy shows.
+        // The blocked page replaces the document, so nothing it or its frames still send counts. It stays hidden
+        // until the blocked page loads, which the navigation policy shows.
         documents.removeObject(forKey: page)
+        conceal(page, true)
         if case .flagged = verdict {
             blockOtherPages(onSiteOf: page)
         }
         return .block(blocked, reason: reason ?? Allowlist.uncheckedReason)
     }
 
+    /// The outcome for a frame with an address of its own: a flagged one flags its site, whose other open pages are
+    /// blocked, and stays hidden, as does one that couldn't be checked or whose site was flagged meanwhile.
+    private func frameOutcome(_ verdict: PageVerdict,
+                              at frameURL: URL,
+                              in page: AnyObject,
+                              frame: String,
+                              document: Document) -> Outcome {
+        switch verdict {
+        case .clear where !allowlist.isFlaggedFrame(frameURL):
+            guard document.revision > document.hiddenRevision else { return .stale }
+            document.cleared = true
+            return .clear
+        case .flagged(let label):
+            allowlist.flag(frameURL, label: label)
+            documents.object(forKey: page)?.frames[frame] = nil
+            blockOtherPages(onSiteOf: nil)
+            return .hideFrame
+        default:
+            documents.object(forKey: page)?.frames[frame] = nil
+            return .hideFrame
+        }
+    }
+
     /// After a page was flagged: every other open page of its site is blocked now, and no answer still due for one of
     /// them can show it.
-    private func blockOtherPages(onSiteOf flagged: AnyObject) {
+    private func blockOtherPages(onSiteOf flagged: AnyObject?) {
         for (page, url) in openPages() where page !== flagged {
             guard case .block(let blocked, let reason)? = allowlist.blockIfFlagged(url, in: page) else { continue }
             documents.removeObject(forKey: page)
@@ -255,7 +334,7 @@ public final class PageCheck: NSObject {
     private func loadingStopped(in webView: WKWebView) {
         guard isConcealed(webView) else { return }
         guard let url = webView.url else { return conceal(webView, false) }
-        if let document = documents.object(forKey: webView), Allowlist.isSameDocument(document.url, url) {
+        if let document = document(in: webView, frame: Self.mainFrame), Allowlist.isSameDocument(document.url, url) {
             if document.cleared { conceal(webView, false) }
             return
         }
@@ -263,7 +342,8 @@ public final class PageCheck: NSObject {
         Task { [weak self, weak webView] in
             try? await Task.sleep(nanoseconds: UInt64((self?.timeout ?? PageCheck.timeout) * 1_000_000_000))
             guard let self, let webView, self.isConcealed(webView), !webView.isLoading, webView.url == url,
-                  self.documents.object(forKey: webView).map({ !Allowlist.isSameDocument($0.url, url) }) ?? true,
+                  self.document(in: webView, frame: Self.mainFrame)
+                    .map({ !Allowlist.isSameDocument($0.url, url) }) ?? true,
                   self.allowlist.needsPageCheck(in: webView, at: url),
                   case .block(let blocked, let reason)? = self.allowlist.blockCheckedPage(url,
                                                                                           in: webView,
@@ -393,6 +473,19 @@ public final class PageCheck: NSObject {
         return;
       }
       const text = MirlumiPageText;
+      // This script runs in every frame. Native tells a frame's documents apart by this token, which only this world
+      // can read, and the frame's origin.
+      const frameToken = (() => {
+        const values = new Uint32Array(4);
+        if (typeof crypto !== "undefined" && crypto.getRandomValues) {
+          crypto.getRandomValues(values);
+        } else {
+          for (let i = 0; i < values.length; i++) {
+            values[i] = Math.floor(Math.random() * 4294967296);
+          }
+        }
+        return Array.from(values, (value) => value.toString(16)).join("");
+      })();
       const HIDE_AFTER_CHARS = 200;
       const SETTLE_MS = 300;
       const ATTRIBUTE_READ_MS = 100;
@@ -438,7 +531,8 @@ public final class PageCheck: NSObject {
         hide();
         const address = location.href;
         sent = page ? text.pageState(address, page) : null;
-        handler.postMessage({ type: "page", document: documentId, revision: current, address, page }).then(
+        const message = { type: "page", frame: frameToken, document: documentId, revision: current, address, page };
+        handler.postMessage(message).then(
           (reply) => {
             if (stopped || !reply || reply.verdict !== "clear" || reply.revision !== current || current !== revision) {
               return;
@@ -488,7 +582,8 @@ public final class PageCheck: NSObject {
           if (!hiddenForChange) {
             hiddenForChange = true;
             // Native conceals the web view at once, and shows it again only for a later revision's clear verdict.
-            handler.postMessage({ type: "hidden", document: documentId, revision }).then(() => {}, () => {});
+            handler.postMessage({ type: "hidden", frame: frameToken, document: documentId, revision })
+              .then(() => {}, () => {});
           }
         } else if (gated) {
           restore();
@@ -567,7 +662,7 @@ public final class PageCheck: NSObject {
         addEventListener("hashchange", () => changed(true));
       };
 
-      const begin = () => handler.postMessage({ type: "start" }).then(
+      const begin = () => handler.postMessage({ type: "start", frame: frameToken }).then(
         (reply) => {
           if (stopped || !reply) {
             return;
@@ -615,22 +710,33 @@ extension PageCheck: WKScriptMessageHandlerWithReply {
     public func userContentController(_ userContentController: WKUserContentController,
                                       didReceive message: WKScriptMessage,
                                       replyHandler: @escaping @MainActor (Any?, String?) -> Void) {
-        // Only the main frame's document counts; the script isn't in frames, and the world is Mirlumi's alone.
-        guard message.frameInfo.isMainFrame,
-              let webView = message.webView,
-              let url = webView.url ?? message.frameInfo.request.url,
-              let body = message.body as? [String: Any]
-        else { return replyHandler(nil, nil) }
+        // Every frame's script talks here, from Mirlumi's own world, which the page's scripts can't reach.
+        guard let webView = message.webView, let body = message.body as? [String: Any] else {
+            return replyHandler(nil, nil)
+        }
+        let isMain = message.frameInfo.isMainFrame
+        let frame: String
+        if isMain {
+            frame = Self.mainFrame
+        } else {
+            guard let token = body["frame"] as? String, !token.isEmpty else { return replyHandler(nil, nil) }
+            let origin = message.frameInfo.securityOrigin
+            frame = "\(origin.protocol)://\(origin.host):\(origin.port)/\(token)"
+        }
+        guard let url = webView.url ?? (isMain ? message.frameInfo.request.url : nil) else {
+            return replyHandler(nil, nil)
+        }
+        let frameURL = isMain ? nil : message.frameInfo.request.url
         switch body["type"] as? String {
         case "start":
-            if let document = startDocument(in: webView, at: url) {
+            if let document = startDocument(in: webView, at: url, frame: frame, frameURL: frameURL) {
                 replyHandler(["check": true, "document": document], nil)
             } else {
                 replyHandler(["check": false], nil)
             }
         case "hidden":
             if let document = body["document"] as? Int {
-                pageHidden(in: webView, document: document)
+                pageHidden(in: webView, document: document, frame: frame)
             }
             replyHandler(nil, nil)
         case "page":
@@ -640,11 +746,20 @@ extension PageCheck: WKScriptMessageHandlerWithReply {
             let text = PageText(message: body["page"])
             Task { [weak self, weak webView] in
                 guard let self, let webView else { return replyHandler(nil, nil) }
-                switch await self.check(text, at: url, in: webView, document: document, revision: revision) {
+                let outcome = await self.check(text,
+                                               at: url,
+                                               in: webView,
+                                               document: document,
+                                               revision: revision,
+                                               frame: frame,
+                                               frameURL: frameURL)
+                switch outcome {
                 case .clear:
                     replyHandler(["verdict": "clear", "revision": revision], nil)
                 case .stale:
                     replyHandler(["verdict": "stale", "revision": revision], nil)
+                case .hideFrame:
+                    replyHandler(["verdict": "blocked", "revision": revision], nil)
                 case .block(let blocked, let reason):
                     replyHandler(["verdict": "blocked", "revision": revision], nil)
                     webView.stopLoading()
