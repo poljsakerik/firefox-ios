@@ -77,6 +77,9 @@ class AppSettingsTableViewController: SettingsTableViewController,
 
     weak var parentCoordinator: SettingsFlowDelegate?
 
+    /// Whether this screen shows Mirlumi's settings, in `MirlumiSettings.swift`, rather than the browser's.
+    var showsMirlumiSettings: Bool { true }
+
     // MARK: - Data Settings
     private var sendTechnicalDataSetting: SendDataSetting?
     private var sendCrashReportsSetting: SendDataSetting?
@@ -324,6 +327,7 @@ class AppSettingsTableViewController: SettingsTableViewController,
     // MARK: - Generate Settings
 
     override func generateSettings() -> [SettingSection] {
+        if showsMirlumiSettings { return mirlumiSettingSections() }
         setupDataSettings()
         var settings = [SettingSection]()
         settings += getDefaultBrowserSetting()
@@ -428,13 +432,6 @@ class AppSettingsTableViewController: SettingsTableViewController,
 
     private func getPrivacySettings() -> [SettingSection] {
         var privacySettings = [Setting]()
-
-        if SettingsLock.shared.isEnabled {
-            privacySettings.append(MirlumiSettingsPINSetting())
-        }
-        if Allowlist.shared.isEnabled {
-            privacySettings.append(MirlumiAllowedSitesSetting())
-        }
 
         privacySettings.append(AutofillPasswordSetting(settings: self, settingsDelegate: parentCoordinator))
 
