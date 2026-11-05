@@ -78,7 +78,7 @@ class AppSettingsTableViewController: SettingsTableViewController,
     weak var parentCoordinator: SettingsFlowDelegate?
 
     /// Whether this screen shows Mirlumi's settings, in `MirlumiSettings.swift`, rather than the browser's.
-    var showsMirlumiSettings: Bool { true }
+    var showsMirlumiSettings: Bool { MirlumiBuild.settingsScreenEnabled }
 
     // MARK: - Data Settings
     private var sendTechnicalDataSetting: SendDataSetting?
@@ -432,6 +432,10 @@ class AppSettingsTableViewController: SettingsTableViewController,
 
     private func getPrivacySettings() -> [SettingSection] {
         var privacySettings = [Setting]()
+
+        if !MirlumiBuild.settingsScreenEnabled {
+            privacySettings += mirlumiPrivacySettings()
+        }
 
         privacySettings.append(AutofillPasswordSetting(settings: self, settingsDelegate: parentCoordinator))
 

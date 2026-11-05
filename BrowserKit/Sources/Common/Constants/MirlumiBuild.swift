@@ -18,6 +18,9 @@ public enum MirlumiBuild {
     /// Mirlumi's own features, from MirlumiKit.
     /// The settings lock keeps Settings, and everything else that changes the browser, behind a parent's PIN.
     public static let settingsLockEnabled = true
+    /// Settings opens on Mirlumi's own settings, with the browser's settings one row below. Off, Mirlumi's rows are in
+    /// the browser's settings, under Privacy.
+    public static let settingsScreenEnabled = true
     /// DuckDuckGo searches always load from its strict safe search host, safe.duckduckgo.com.
     public static let safeSearchEnabled = true
     /// DuckDuckGo is the only search engine, with no others to choose, add or search once with. Google Lens needs

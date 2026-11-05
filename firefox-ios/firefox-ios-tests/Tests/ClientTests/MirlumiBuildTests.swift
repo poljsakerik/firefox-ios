@@ -26,6 +26,10 @@ final class MirlumiBuildTests: XCTestCase {
         XCTAssertTrue(MirlumiBuild.settingsLockEnabled)
     }
 
+    func testSettingsOpenOnMirlumisOwnSettings() {
+        XCTAssertTrue(MirlumiBuild.settingsScreenEnabled)
+    }
+
     func testDuckDuckGoSearchesUseStrictSafeSearch() {
         XCTAssertTrue(MirlumiBuild.safeSearchEnabled)
     }

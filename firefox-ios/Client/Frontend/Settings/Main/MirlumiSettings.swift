@@ -25,6 +25,18 @@ extension AppSettingsTableViewController {
         return sections
     }
 
+    /// Mirlumi's rows in the browser's Privacy section, while `MirlumiBuild.settingsScreenEnabled` is off.
+    func mirlumiPrivacySettings() -> [Setting] {
+        var settings = [Setting]()
+        if SettingsLock.shared.isEnabled {
+            settings.append(MirlumiSettingsPINSetting())
+        }
+        if Allowlist.shared.isEnabled {
+            settings.append(MirlumiAllowedSitesSetting())
+        }
+        return settings
+    }
+
     private func makeBrowserSettingsController() -> UIViewController? {
         guard let profile, let tabManager, let settingsDelegate, let parentCoordinator else { return nil }
         return MirlumiBrowserSettingsViewController(
