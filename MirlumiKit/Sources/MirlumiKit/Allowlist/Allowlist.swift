@@ -443,9 +443,29 @@ public final class Allowlist {
         return .some(articles[0].value.flatMap(URL.init(string:)))
     }
 
-    /// The blocked page, from packages/allowlist.
-    static let blockedPage: String = Bundle.module.url(forResource: "MirlumiBlocked", withExtension: "html")
-        .flatMap { try? String(contentsOf: $0, encoding: .utf8) } ?? ""
+    /// The blocked page, from packages/allowlist, with its strings in each language from the `AllowlistBlocked` tables.
+    static let blockedPage: String = {
+        let page = Bundle.module.url(forResource: "MirlumiBlocked", withExtension: "html")
+            .flatMap { try? String(contentsOf: $0, encoding: .utf8) } ?? ""
+        return page.replacingOccurrences(of: "__MIRLUMI_BLOCKED_STRINGS__", with: blockedPageStrings(in: .module))
+    }()
+
+    /// A JavaScript object of the blocked page's strings by language, safe to place inside a script element.
+    static func blockedPageStrings(in bundle: Bundle) -> String {
+        var languages: [String: [String: String]] = [:]
+        for language in ["en", "sl"] {
+            guard let url = bundle.path(forResource: language, ofType: "lproj")
+                    .flatMap(Bundle.init(path:))?
+                    .url(forResource: "AllowlistBlocked", withExtension: "strings"),
+                  let table = NSDictionary(contentsOf: url) as? [String: String]
+            else { continue }
+            languages[language] = table
+        }
+        guard let data = try? JSONSerialization.data(withJSONObject: languages, options: [.sortedKeys]),
+              let json = String(data: data, encoding: .utf8)
+        else { return "{}" }
+        return json.replacingOccurrences(of: "</", with: "<\\/")
+    }
 
     /// The blocked page, saying why when the page classifier flagged the page: `reason` is a category such as
     /// `gambling`, or `search:gambling` for a search. The page reads it from its root element's `data-reason`.

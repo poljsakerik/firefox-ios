@@ -114,60 +114,122 @@ button:disabled {
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+// Decides which addresses open in allowlist-only mode. A classic script, so the same file runs in Android's built-in
+// extension, in JavaScriptCore on iOS, and in Node's tests. It defines globalThis.MirlumiAllowlist.
+
 "use strict";
 
-globalThis.MirlumiBlockedStrings = {
-  "en": {
-    "title": "This site isn't on the list",
-    "body": "Mirlumi opens only the sites on its list for children, and sites a parent has allowed.",
-    "parent": "A parent can allow it with the Settings PIN.",
-    "allow": "Allow with PIN",
-    "back": "Go back",
-    "failed": "The PIN screen couldn't open. Try again.",
-    "flaggedTitle": "This page was blocked",
-    "flaggedBody": "It seems to be about {category}.",
-    "flaggedParent": "If that's wrong, a parent can allow the site with the Settings PIN.",
-    "searchTitle": "This search was blocked",
-    "searchBody": "It seems to be about {category}.",
-    "category.sexual": "adult content",
-    "category.gambling": "gambling",
-    "category.drugs": "drugs",
-    "category.hate_violence": "hate or violence",
-    "category.weapons": "weapons",
-    "category.dating": "dating",
-    "category.filter_bypass": "ways round the filter",
-    "category.piracy": "pirated films, music or software",
-    "category.hacking": "hacking",
-    "uncheckedTitle": "This page couldn't be checked",
-    "uncheckedBody": "Checking it took too long or failed, so it stays hidden.",
-    "retry": "Try again"
-  },
-  "sl": {
-    "title": "Te strani ni na seznamu",
-    "body": "Mirlumi odpre le strani s svojega seznama za otroke in strani, ki jih je dovolil starš.",
-    "parent": "Starš jo lahko dovoli s PIN-om za nastavitve.",
-    "allow": "Dovoli s PIN-om",
-    "back": "Nazaj",
-    "failed": "Zaslona za PIN ni bilo mogoče odpreti. Poskusite znova.",
-    "flaggedTitle": "Ta stran je blokirana",
-    "flaggedBody": "Videti je, da gre za {category}.",
-    "flaggedParent": "Če to ne drži, lahko starš stran dovoli s PIN-om za nastavitve.",
-    "searchTitle": "To iskanje je blokirano",
-    "searchBody": "Videti je, da gre za {category}.",
-    "category.sexual": "vsebine za odrasle",
-    "category.gambling": "igre na srečo",
-    "category.drugs": "droge",
-    "category.hate_violence": "sovraštvo ali nasilje",
-    "category.weapons": "orožje",
-    "category.dating": "zmenkarije",
-    "category.filter_bypass": "obhod filtra",
-    "category.piracy": "piratske filme, glasbo ali programe",
-    "category.hacking": "hekanje",
-    "uncheckedTitle": "Te strani ni bilo mogoče preveriti",
-    "uncheckedBody": "Preverjanje je trajalo predolgo ali ni uspelo, zato ostaja skrita.",
-    "retry": "Poskusi znova"
+(function (root) {
+  const LABEL = /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/;
+  const PATH = /^(?:\/[a-z0-9._~-]+)+$/;
+
+  /** A lowercase host name without a trailing dot, or null for anything else, including IP addresses. */
+  function normalizeHost(host) {
+    if (typeof host !== "string") return null;
+    let name = host.trim().toLowerCase();
+    if (name.endsWith(".")) name = name.slice(0, -1);
+    if (name.length === 0 || name.length > 253) return null;
+    const labels = name.split(".");
+    if (labels.length < 2 || !labels.every((label) => LABEL.test(label))) return null;
+    if (/^[0-9]+$/.test(labels[labels.length - 1])) return null;
+    return name;
   }
-};
+
+  /**
+   * A path that path-scoped entries can be matched against, lowercased, or null if it could step outside a prefix:
+   * dot segments, encoded dots or slashes, or backslashes.
+   */
+  function normalizePath(path) {
+    if (typeof path !== "string") return null;
+    const lower = (path || "/").toLowerCase();
+    if (!lower.startsWith("/") || lower.includes("\\") || /%2e|%2f|%5c/.test(lower)) return null;
+    if (lower.split("/").some(isDotSegment)) return null;
+    return lower;
+  }
+
+  function isDotSegment(segment) {
+    return segment === "." || segment === "..";
+  }
+
+  /**
+   * Parses an entry: a host such as "pbskids.org", which also covers its subdomains, or a host and a path prefix such
+   * as "bbc.co.uk/cbeebies". Returns { host, path } with path null for a whole host, or null if the entry is invalid.
+   */
+  function parseEntry(entry) {
+    if (typeof entry !== "string") return null;
+    const slash = entry.indexOf("/");
+    const host = normalizeHost(slash < 0 ? entry : entry.slice(0, slash));
+    if (!host) return null;
+    if (slash < 0) return { host, path: null };
+    const path = entry.slice(slash).toLowerCase();
+    if (!PATH.test(path) || path.split("/").some(isDotSegment)) return null;
+    return { host, path };
+  }
+
+  /** The entry a parent adds to allow host: the host itself, without a leading "www.". */
+  function entryForHost(host) {
+    const name = normalizeHost(host);
+    if (!name) return null;
+    const bare = name.startsWith("www.") ? name.slice(4) : name;
+    return normalizeHost(bare) ? bare : name;
+  }
+
+  /** The host and path of an http or https address, using URL where the platform has it. */
+  function hostAndPath(url) {
+    if (typeof URL !== "function") return null;
+    let parsed;
+    try {
+      parsed = new URL(url);
+    } catch (e) {
+      return null;
+    }
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") return null;
+    return { host: parsed.hostname, path: parsed.pathname };
+  }
+
+  /** A matcher over every entry in lists, an array of arrays of entries. Invalid entries are skipped. */
+  function create(lists) {
+    const hosts = new Set();
+    const prefixes = new Map();
+    for (const list of lists) {
+      for (const entry of list || []) {
+        const parsed = parseEntry(entry);
+        if (!parsed) continue;
+        if (parsed.path === null) {
+          hosts.add(parsed.host);
+        } else {
+          if (!prefixes.has(parsed.host)) prefixes.set(parsed.host, []);
+          prefixes.get(parsed.host).push(parsed.path);
+        }
+      }
+    }
+
+    function matchesPrefix(host, path) {
+      const list = prefixes.get(host);
+      return !!list && path !== null && list.some((prefix) => path === prefix || path.startsWith(prefix + "/"));
+    }
+
+    return {
+      /** Whether a page at host and path opens. */
+      allows(host, path) {
+        let name = normalizeHost(host);
+        if (!name) return false;
+        const cleanPath = normalizePath(path);
+        for (;;) {
+          if (hosts.has(name) || matchesPrefix(name, cleanPath)) return true;
+          const dot = name.indexOf(".");
+          if (dot < 0) return false;
+          name = name.slice(dot + 1);
+        }
+      },
+    };
+  }
+
+  root.MirlumiAllowlist = Object.freeze({ create, entryForHost, hostAndPath, normalizeHost, parseEntry });
+})(globalThis);
+</script>
+    <script>
+globalThis.MirlumiBlockedStrings = __MIRLUMI_BLOCKED_STRINGS__;
 </script>
     <script>
 /* This Source Code Form is subject to the terms of the Mozilla Public
@@ -180,7 +242,7 @@ globalThis.MirlumiBlockedStrings = {
 
 "use strict";
 
-/* global MirlumiBlockedStrings */
+/* global MirlumiAllowlist, MirlumiBlockedStrings */
 
 (function () {
   const ALLOW_URL = "internal://local/mirlumi/allow";
@@ -220,6 +282,9 @@ globalThis.MirlumiBlockedStrings = {
     shown.body = (isSearch ? text.searchBody : text.flaggedBody).replace("{category}", category);
     shown.parent = text.flaggedParent;
   }
+  // Only a site's name can go on the list. For any other address, such as an IP address, the PIN would allow nothing.
+  const allowable = MirlumiAllowlist.entryForHost(host) !== null;
+  if (!allowable) shown.parent = text.cannotAllow;
   document.title = shown.title;
   for (const id of ["title", "body", "parent", "failed", "allow", "back", "retry"]) {
     element(id).textContent = shown[id];
@@ -249,7 +314,7 @@ globalThis.MirlumiBlockedStrings = {
   const allow = element("allow");
   const failed = element("failed");
   // Another site could frame this page to make a parent allow an address of its choosing.
-  allow.hidden = window.top !== window || isSearch;
+  allow.hidden = !allowable || window.top !== window || isSearch;
   allow.addEventListener("click", async () => {
     failed.hidden = true;
     if (!extension) {

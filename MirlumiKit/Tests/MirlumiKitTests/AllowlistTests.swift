@@ -177,6 +177,27 @@ final class AllowlistTests: XCTestCase {
         XCTAssertTrue(Allowlist.blockedPage.contains("MirlumiBlockedStrings"))
     }
 
+    func testTheBlockedPageTakesItsStringsFromBothLanguagesTables() throws {
+        let page = Allowlist.blockedPage
+        XCTAssertFalse(page.contains("__MIRLUMI_BLOCKED_STRINGS__"))
+        let strings = try XCTUnwrap(
+            JSONSerialization.jsonObject(with: Data(Allowlist.blockedPageStrings(in: .module).utf8))
+                as? [String: [String: String]]
+        )
+        XCTAssertEqual(Set(strings.keys), ["en", "sl"])
+        for language in ["en", "sl"] {
+            let path = try XCTUnwrap(Bundle.module.path(forResource: language, ofType: "lproj"))
+            let bundle = try XCTUnwrap(Bundle(path: path))
+            for key in ["title", "body", "parent", "cannotAllow", "allow", "back", "failed"] {
+                let value = bundle.localizedString(forKey: key, value: "MISSING", table: "AllowlistBlocked")
+                XCTAssertNotEqual(value, "MISSING", "\(language): \(key)")
+                XCTAssertEqual(strings[language]?[key], value, "\(language): \(key)")
+            }
+        }
+        XCTAssertTrue(page.contains("pbskids.org, can be."))
+        XCTAssertTrue(page.contains("na primer pbskids.org."))
+    }
+
     func testEveryStringExistsInEnglishAndSlovenian() throws {
         for language in ["en", "sl"] {
             let path = try XCTUnwrap(Bundle.module.path(forResource: language, ofType: "lproj"))
